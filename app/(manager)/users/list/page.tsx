@@ -25,6 +25,7 @@ export default function UserManagementPage() {
   const [roleFilter, setRoleFilter] = useState('Tất cả');
   const [statusFilter, setStatusFilter] = useState('Tất cả');
   const [currentPage, setCurrentPage] = useState(1);
+  const [error, setError] = useState('');
 
   // --- LOGIC LỌC DỮ LIỆU ---
   const filteredData = useMemo(() => {
@@ -45,8 +46,14 @@ export default function UserManagementPage() {
 
   // --- HANDLERS (Thay thế cho useEffect) ---
   const handleSearchChange = (value: string) => {
-    setSearchTerm(value);
-    setCurrentPage(1); 
+    if (value.length <= 100) {
+      setSearchTerm(value);
+      setCurrentPage(1);
+      setError('');
+    } else {
+      setSearchTerm(value.slice(0, 100)); 
+      setError('Từ khóa tìm kiếm không được quá 100 ký tự!');
+    }
   };
 
   const handleRoleChange = (value: string) => {
@@ -73,6 +80,7 @@ export default function UserManagementPage() {
       <UserFilters 
         searchTerm={searchTerm} 
         setSearchTerm={handleSearchChange}
+        error={error}
         
         roleFilter={roleFilter} 
         setRoleFilter={handleRoleChange}

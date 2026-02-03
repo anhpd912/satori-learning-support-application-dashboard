@@ -20,18 +20,15 @@ export default function CreateUserPage() {
   return (
     <div className="p-8 bg-gray-50 min-h-screen font-sans">
       
-      {/* --- 1. HEADER (Giữ nguyên) --- */}
+      {/* --- 1. HEADER AREA --- */}
       <PageHeader 
-        // 1. Breadcrumb tùy chỉnh
         breadcrumb={
           <>
              Quản lí người dùng <span className="mx-1">{'>'}</span> <span className="text-gray-900 font-medium">Tạo người dùng mới</span>
           </>
         }
-        // 2. Link quay lại
         backUrl="/users/list"
         
-        // 3. Nội dung bên phải
         title="Tạo người dùng mới"
         description="Tạo người dùng mới cho ứng dụng"
       />
@@ -66,7 +63,6 @@ export default function CreateUserPage() {
 
                 <FormDate 
                     label="Ngày sinh" 
-                    // Không cần placeholder vì type="date" sẽ tự hiển thị dd/mm/yyyy theo trình duyệt
                 />
             </div>
 
@@ -85,7 +81,7 @@ export default function CreateUserPage() {
         </form>
       </div>
 
-      {/* --- 3. BLUE NOTE BOX (Viết thẳng vào đây) --- */}
+      {/* --- 3. BLUE NOTE BOX --- */}
       <div className="max-w-4xl mx-auto bg-blue-50 rounded-xl p-6 flex items-start gap-4 border border-blue-100">
         <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0 text-blue-600 font-bold">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
