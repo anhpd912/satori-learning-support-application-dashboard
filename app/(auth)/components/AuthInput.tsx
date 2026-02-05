@@ -6,9 +6,10 @@ interface AuthInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label: string;
   isPassword?: boolean;
   icon?: React.ReactNode;
+  error?: string;
 }
 
-export default function AuthInput({ label, isPassword = false, icon, className = '', ...props }: AuthInputProps) {
+export default function AuthInput({ label, isPassword = false, icon, className = '', error, ...props }: AuthInputProps) {
   const [showPassword, setShowPassword] = useState(false);
 
   const inputType = isPassword ? (showPassword ? 'text' : 'password') : props.type || 'text';
@@ -20,7 +21,11 @@ export default function AuthInput({ label, isPassword = false, icon, className =
         <input
           {...props}
           type={inputType}
-          className={`w-full pl-4 pr-10 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#253A8C] focus:border-transparent text-gray-900 placeholder-gray-400 transition-all ${className}`}
+          className={`w-full pl-4 pr-10 py-3 rounded-lg border focus:outline-none focus:ring-2 transition-all ${
+            error 
+              ? 'border-red-500 focus:ring-red-200 focus:border-red-500' 
+              : 'border-gray-200 focus:ring-[#253A8C] focus:border-transparent'
+          } text-gray-900 placeholder-gray-400 ${className}`}
         />
         
         <div className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
@@ -42,6 +47,7 @@ export default function AuthInput({ label, isPassword = false, icon, className =
           )}
         </div>
       </div>
+      {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
     </div>
   );
 }

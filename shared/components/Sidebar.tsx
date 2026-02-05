@@ -1,41 +1,59 @@
 'use client';
 
-import { useState } from 'react'; // 👈 Thêm useState
+import { useState, useEffect } from 'react'; // 👈 1. Import useEffect
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation'; // 👈 Thêm useRouter
+import { usePathname, useRouter } from 'next/navigation';
 import { MenuItem } from '@/shared/constants/sidebar-menus';
 import Image from 'next/image';
+import { authService } from '@/app/(auth)/login/services/auth.service';
 
 interface SidebarProps {
   menuItems: MenuItem[];
-  user: {
-    name: string;
-    role: string;
-    avatar: string;
-  };
 }
 
-export default function Sidebar({ menuItems, user }: SidebarProps) {
+export default function Sidebar({ menuItems }: SidebarProps) {
   const pathname = usePathname();
-  const router = useRouter(); // 👈 Hook để điều hướng
+  const router = useRouter();
 
-  // State bật/tắt menu con
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
 
-  // --- HÀM XỬ LÝ ĐĂNG XUẤT ---
+  const [currentUser, setCurrentUser] = useState({
+    fullName: 'Đang tải...',
+    role: '...',
+    avatar: ''
+  });
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+        const storedUser = localStorage.getItem('currentUser');
+        
+        if (storedUser) {
+            try {
+                const parsedUser = JSON.parse(storedUser);
+                setTimeout(() => {
+                    setCurrentUser({
+                        fullName: parsedUser.fullName || 'Người dùng',
+                        role: parsedUser.role || 'Manager',
+                        avatar: parsedUser.avatar || '' 
+                    });
+                }, 0);
+            } catch (error) {
+                console.error("Lỗi đọc dữ liệu user:", error);
+            }
+        }
+    }
+  }, []);
+
   const handleLogout = () => {
-    // 1. Xóa token hoặc session lưu ở client (Ví dụ minh họa)
-    // localStorage.removeItem('accessToken');
-    // document.cookie = ...
-    
-    // 2. Chuyển hướng về trang login
+    authService.logout();
+    setIsUserMenuOpen(false);
     router.push('/login');
   };
 
   return (
     <aside className="w-64 bg-white border-r border-gray-200 h-screen flex flex-col justify-between sticky top-0 left-0 overflow-y-auto z-50">
       
-      {/* --- PHẦN TRÊN: LOGO & MENU (Giữ nguyên) --- */}
+      {/* --- LOGO & MENU --- */}
       <div>
         {/* Logo */}
         <div className="p-6 flex items-center gap-3">
@@ -84,25 +102,22 @@ export default function Sidebar({ menuItems, user }: SidebarProps) {
         </nav>
       </div>
 
-      {/* --- PHẦN DƯỚI: USER PROFILE (Đã sửa để có Drop-up) --- */}
+      {/* --- USER PROFILE --- */}
       <div className="p-4 border-t border-gray-100 relative">
         
-        {/* 1. MENU DROP-UP (Hiện lên khi state = true) */}
+        {/* 1. MENU DROP-UP */}
         {isUserMenuOpen && (
             <>
-                {/* Lớp Overlay tàng hình phủ toàn màn hình để click ra ngoài thì đóng menu */}
                 <div 
                     className="fixed inset-0 z-40 cursor-default" 
                     onClick={() => setIsUserMenuOpen(false)}
                 ></div>
 
-                {/* Hộp Menu */}
                 <div className="absolute bottom-[110%] left-4 right-4 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden z-50 animate-in slide-in-from-bottom-2 fade-in duration-200">
                     <button 
                         onClick={handleLogout}
                         className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors text-left"
                     >
-                        {/* Icon Logout */}
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
                             <polyline points="16 17 21 12 16 7"></polyline>
@@ -114,7 +129,7 @@ export default function Sidebar({ menuItems, user }: SidebarProps) {
             </>
         )}
 
-        {/* 2. NÚT PROFILE (Kích hoạt menu) */}
+        {/* 2. NÚT PROFILE HIỂN THỊ THÔNG TIN THẬT */}
         <div 
             onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
             className={`flex items-center gap-3 p-2 rounded-lg cursor-pointer transition border ${
@@ -122,22 +137,34 @@ export default function Sidebar({ menuItems, user }: SidebarProps) {
             }`}
         >
             {/* Avatar */}
-            <div className="w-10 h-10 rounded-full bg-gray-200 overflow-hidden border border-gray-200 flex-shrink-0">
-                <img 
-                  src={user.avatar} 
-                  alt={user.name} 
-                  className="w-full h-full object-cover" 
-                  onError={(e) => e.currentTarget.src = 'https://ui-avatars.com/api/?name=User&background=random'} 
-                />
+            <div className="w-10 h-10 rounded-full bg-gray-200 overflow-hidden border border-gray-200 flex-shrink-0 relative">
+              {currentUser.avatar ? (
+                  <img 
+                      src={currentUser.avatar} 
+                      alt={currentUser.fullName} 
+                      className="w-full h-full object-cover" 
+                      onError={(e) => {
+                          // Fallback khi ảnh lỗi
+                          e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.fullName)}&background=random`;
+                      }} 
+                  />
+              ) : (
+                  // Nếu không có avatar (chuỗi rỗng), hiển thị ảnh tạo tự động luôn
+                  <img 
+                      src={`https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.fullName)}&background=random`}
+                      alt={currentUser.fullName}
+                      className="w-full h-full object-cover"
+                  />
+              )}
             </div>
             
             {/* Info */}
             <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-gray-700 truncate">{user.name}</p>
-                <p className="text-xs text-gray-500 truncate">{user.role}</p>
+                {/* Sử dụng currentUser.name và role */}
+                <p className="text-sm font-semibold text-gray-700 truncate">{currentUser.fullName}</p>
+                <p className="text-xs text-gray-500 truncate capitalize">{currentUser.role}</p>
             </div>
 
-            {/* Mũi tên chỉ hướng (Xoay khi mở) */}
             <div className={`text-gray-400 transition-transform duration-200 ${isUserMenuOpen ? 'rotate-180' : ''}`}>
                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                       <path d="M18 15l-6-6-6 6" strokeLinecap="round" strokeLinejoin="round"/>

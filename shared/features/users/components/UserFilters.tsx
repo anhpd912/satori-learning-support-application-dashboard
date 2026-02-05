@@ -1,9 +1,8 @@
 'use client'; 
 
-import React from 'react'; // Bỏ useState ở đây
+import React, { useMemo } from 'react';
 import FilterDropdown from '@/shared/components/FilterDropdown';
 
-// 1. Định nghĩa Props để nhận dữ liệu từ cha
 interface UserFiltersProps {
   searchTerm: string;
   setSearchTerm: (value: string) => void;
@@ -12,15 +11,36 @@ interface UserFiltersProps {
   statusFilter: string;
   setStatusFilter: (value: string) => void;
   error?: string;
+  currentRole?: 'ADMIN' | 'MANAGER';
 }
 
-// 2. Nhận props vào hàm
 export default function UserFilters({
   searchTerm, setSearchTerm,
   roleFilter, setRoleFilter,
   statusFilter, setStatusFilter,
-  error
+  error,
+  currentRole = 'MANAGER'
 }: UserFiltersProps) {
+
+  const roleOptions = useMemo(() => {
+    const options = ['Tất cả', 'LEARNER', 'TEACHER'];
+
+    if (currentRole === 'ADMIN') {
+        options.push('MANAGER', 'ADMIN');
+    }
+
+    return options;
+  }, [currentRole]);
+
+  const statusOptions = useMemo(() => {
+    const options = ['Tất cả', 'ACTIVE', 'INACTIVE', 'SUSPENDED'];
+
+    if (currentRole === 'ADMIN') {
+        options.push('DELETED');
+    }
+    
+    return options;
+  }, [currentRole]);
 
   return (
     <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200 mb-6">
@@ -32,8 +52,7 @@ export default function UserFilters({
           <div className="relative">
             <input 
               type="text" 
-              placeholder="Tìm kiếm người dùng theo tên hoặc email" 
-              // 3. Gắn giá trị từ cha vào đây
+              placeholder="Tìm kiếm người dùng theo tên hoặc email..." 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm text-gray-900 placeholder-gray-500 ${
@@ -56,14 +75,14 @@ export default function UserFilters({
         <div className="flex gap-4">
           <FilterDropdown 
             label="Vai trò"
-            options={['Tất cả', 'Teacher', 'Learner']}
+            options={roleOptions}
             value={roleFilter}
             onChange={setRoleFilter}
           />
 
           <FilterDropdown 
             label="Trạng thái"
-            options={['Tất cả', 'Active', 'Inactive', 'Suspended']}
+            options={statusOptions}
             value={statusFilter}
             onChange={setStatusFilter}
           />

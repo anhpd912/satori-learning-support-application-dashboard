@@ -3,7 +3,8 @@
 import React, { use } from 'react';
 import UserDetailFeature from '@/shared/features/users/UserDetailFeature';
 
-export default function ManagerUserDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default function AdminUserDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
-  return <UserDetailFeature userId={id} role="MANAGER" />;
+
+  return <UserDetailFeature userId={id} role="ADMIN" />;
 }
