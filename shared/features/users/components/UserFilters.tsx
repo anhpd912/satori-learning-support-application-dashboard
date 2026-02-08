@@ -52,7 +52,7 @@ export default function UserFilters({
           <div className="relative">
             <input 
               type="text" 
-              placeholder="Tìm kiếm người dùng theo tên hoặc email..." 
+              placeholder="Tìm kiếm người dùng theo tên" 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm text-gray-900 placeholder-gray-500 ${

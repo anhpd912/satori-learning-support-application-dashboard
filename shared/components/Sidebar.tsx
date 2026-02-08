@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react'; // 👈 1. Import useEffect
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { MenuItem } from '@/shared/constants/sidebar-menus';
 import Image from 'next/image';
-import { authService } from '@/app/(auth)/login/services/auth.service';
+import { authService } from '@/app/(auth)/services/auth.service'; // Đảm bảo đường dẫn import đúng
 
 interface SidebarProps {
   menuItems: MenuItem[];
@@ -105,7 +105,7 @@ export default function Sidebar({ menuItems }: SidebarProps) {
       {/* --- USER PROFILE --- */}
       <div className="p-4 border-t border-gray-100 relative">
         
-        {/* 1. MENU DROP-UP */}
+        {/* 1. MENU DROP-UP (Popup Menu) */}
         {isUserMenuOpen && (
             <>
                 <div 
@@ -114,6 +114,20 @@ export default function Sidebar({ menuItems }: SidebarProps) {
                 ></div>
 
                 <div className="absolute bottom-[110%] left-4 right-4 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden z-50 animate-in slide-in-from-bottom-2 fade-in duration-200">
+                    
+                    <Link 
+                        href="/change-password"
+                        onClick={() => setIsUserMenuOpen(false)} // Đóng menu khi click
+                        className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors text-left border-b border-gray-50"
+                    >
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                        </svg>
+                        Đổi mật khẩu
+                    </Link>
+
+                    {/* Nút Đăng xuất */}
                     <button 
                         onClick={handleLogout}
                         className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors text-left"
@@ -129,7 +143,7 @@ export default function Sidebar({ menuItems }: SidebarProps) {
             </>
         )}
 
-        {/* 2. NÚT PROFILE HIỂN THỊ THÔNG TIN THẬT */}
+        {/* 2. NÚT PROFILE HIỂN THỊ THÔNG TIN */}
         <div 
             onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
             className={`flex items-center gap-3 p-2 rounded-lg cursor-pointer transition border ${
@@ -144,12 +158,10 @@ export default function Sidebar({ menuItems }: SidebarProps) {
                       alt={currentUser.fullName} 
                       className="w-full h-full object-cover" 
                       onError={(e) => {
-                          // Fallback khi ảnh lỗi
                           e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.fullName)}&background=random`;
                       }} 
                   />
               ) : (
-                  // Nếu không có avatar (chuỗi rỗng), hiển thị ảnh tạo tự động luôn
                   <img 
                       src={`https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.fullName)}&background=random`}
                       alt={currentUser.fullName}
@@ -160,7 +172,6 @@ export default function Sidebar({ menuItems }: SidebarProps) {
             
             {/* Info */}
             <div className="flex-1 min-w-0">
-                {/* Sử dụng currentUser.name và role */}
                 <p className="text-sm font-semibold text-gray-700 truncate">{currentUser.fullName}</p>
                 <p className="text-xs text-gray-500 truncate capitalize">{currentUser.role}</p>
             </div>
