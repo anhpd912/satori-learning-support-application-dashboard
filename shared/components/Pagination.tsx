@@ -50,7 +50,7 @@ export default function Pagination({
       <div className="text-sm text-gray-500">
         Hiển thị <span className="font-medium text-gray-900">{startItem}</span> đến{' '}
         <span className="font-medium text-gray-900">{endItem}</span> trong số{' '}
-        <span className="font-medium text-gray-900">{totalItems}</span> người dùng
+        <span className="font-medium text-gray-900">{totalItems}</span>
       </div>
 
       {/* Các nút bấm bên phải */}

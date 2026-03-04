@@ -3,7 +3,6 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import AuthBranding from '../../components/AuthBranding';
 import AuthInput from '../../components/AuthInput';
 import { authService } from '../../services/auth.service';
 
@@ -33,7 +32,7 @@ export default function LoginPage() {
     } else {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(formData.email)) {
-            newErrors.email = 'Email không đúng định dạng';
+            newErrors.email = 'Hãy nhập email hợp lệ';
             isValid = false;
         }
     }
@@ -76,6 +75,9 @@ export default function LoginPage() {
         const data = await authService.login(formData.email, formData.password);
         
         localStorage.setItem('accessToken', data.accessToken);
+        if (data.refreshToken) {
+            localStorage.setItem('refreshToken', data.refreshToken);
+        }
         localStorage.setItem('currentUser', JSON.stringify(data.user));
 
         const role = data.user.role;
@@ -90,7 +92,7 @@ export default function LoginPage() {
                 break;
 
             case 'TEACHER':
-                router.push('/dashboard'); 
+                router.push('/my-classes'); 
                 break;
             default:
                 router.push('/dashboard');
@@ -157,18 +159,6 @@ export default function LoginPage() {
             />
 
                 <div className="flex items-center justify-between pt-1">
-                    <div className="flex items-center">
-                        <input 
-                            id="remember-me" 
-                            type="checkbox" 
-                            className="h-4 w-4 text-[#253A8C] focus:ring-[#253A8C] border-gray-300 rounded cursor-pointer"
-                            checked={formData.remember}
-                            onChange={(e) => setFormData({...formData, remember: e.target.checked})}
-                        />
-                        <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700 cursor-pointer select-none">
-                            Ghi nhớ đăng nhập
-                        </label>
-                    </div>
                     <Link href="/forgot-password" className="text-sm font-medium text-[#253A8C] hover:text-[#1e2e70] hover:underline">
                         Quên mật khẩu?
                     </Link>

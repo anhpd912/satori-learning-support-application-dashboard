@@ -1,13 +1,13 @@
 import React from 'react';
 import Sidebar from '@/shared/components/Sidebar';
-import { MANAGER_MENU } from '@/shared/constants/sidebar-menus';
+import { TEACHER_MENU } from '@/shared/constants/sidebar-menus';
 import AuthGuard from '@/shared/components/AuthGuard';
 
-export default function ManagerLayout({ children }: { children: React.ReactNode }) {
+export default function TeacherLayout({ children }: { children: React.ReactNode }) {
   return (
-    <AuthGuard allowedRoles={['MANAGER']}> 
+    <AuthGuard allowedRoles={['TEACHER']}> 
       <div className="flex min-h-screen bg-gray-50">
-        <Sidebar menuItems={MANAGER_MENU}/>
+        <Sidebar menuItems={TEACHER_MENU}/>
         <main className="flex-1 overflow-x-hidden">
           {children}
         </main>

@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { MenuItem } from '@/shared/constants/sidebar-menus';
 import Image from 'next/image';
-import { authService } from '@/app/(auth)/services/auth.service'; // Đảm bảo đường dẫn import đúng
+import { authService } from '@/app/(auth)/services/auth.service';
 
 interface SidebarProps {
   menuItems: MenuItem[];

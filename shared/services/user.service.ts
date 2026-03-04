@@ -1,4 +1,5 @@
 import { User } from '@/shared/types/user';
+import axios, { AxiosError } from 'axios';
 
 interface BackendUser {
     id: string;
@@ -66,6 +67,14 @@ export interface RestoreUserRequest {
     role: string;
 }
 
+interface ServiceError extends Error {
+    code?: string;
+    data?: any;
+    validationErrors?: any;
+}
+
+const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v1') + '/users';
+
 export const userService = {
     getUsers: async (
         page: number, 
@@ -74,45 +83,30 @@ export const userService = {
         role: string, 
         status: string
     ): Promise<GetUsersResponse> => {
-        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v1';
         const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : '';
-
         const pageIndex = page > 0 ? page - 1 : 0;
 
-        let mappedRole = '';
-        if (role && role !== 'Tất cả') {
-             mappedRole = role.toUpperCase();
-        }
-
-        let mappedStatus = '';
-        if (status && status !== 'Tất cả') {
-            mappedStatus = status.toUpperCase();
-        }
-
-        const params = new URLSearchParams({
-            page: pageIndex.toString(),
-            size: limit.toString(),
-            ...(search && { keyword: search }), 
-            ...(mappedRole && { role: mappedRole }),   
-            ...(mappedStatus && { status: mappedStatus }),
-        });
-
         try {
-            const res = await fetch(`${API_URL}/users?${params.toString()}`, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
+            const response = await axios.get<BackendApiResponse>(API_URL, {
+                params: {
+                    page: pageIndex,
+                    size: limit,
+                    ...(search ? { keyword: search } : {}),
+                    ...(role && role !== 'Tất cả' ? { role: role.toUpperCase() } : {}),
+                    ...(status && status !== 'Tất cả' ? { status: status.toUpperCase() } : {}),
                 },
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
             });
 
-            const response: BackendApiResponse = await res.json();
+            const apiResponse = response.data;
 
-            if (!res.ok || !response.success) {
-                throw new Error(response.message || 'Không thể tải danh sách người dùng');
+            if (!apiResponse.success) {
+                throw new Error(apiResponse.message || 'Không thể tải danh sách người dùng');
             }
 
-            const mappedUsers: User[] = response.data.content.map((u) => {
+            const mappedUsers: User[] = apiResponse.data.content.map((u) => {
                 const displayName = u.displayName || u.fullName || `${u.firstName} ${u.lastName}`;
 
                 return {
@@ -131,80 +125,65 @@ export const userService = {
 
             return {
                 data: mappedUsers,
-                total: response.data.totalElements,
-                totalPages: response.data.totalPages
+                total: apiResponse.data.totalElements,
+                totalPages: apiResponse.data.totalPages
             };
 
-        } catch (error: unknown) {
-            if (error instanceof Error) {
-                throw new Error(error.message);
-            }
-            throw new Error('Lỗi kết nối Server');
+        } catch (error) {
+            const err = error as AxiosError<BackendApiResponse>;
+            throw new Error(err.response?.data?.message || err.message || 'Lỗi kết nối Server');
         }
     },
 
     createUser: async (userData: CreateUserRequest) => {
-        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v1';
         const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : '';
 
         try {
-            const res = await fetch(`${API_URL}/users`, {
-                method: 'POST',
+            const response = await axios.post(API_URL, userData, {
                 headers: {
-                    'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify(userData),
+                }
             });
 
-            const response = await res.json();
+            return response.data;
 
-            if (!res.ok || !response.success) {
-                const error = new Error(response.message || 'Tạo người dùng thất bại');
+        } catch (error) {
+            const err = error as AxiosError<BackendApiResponse>;
+            if (err.response?.data) {
+                const responseData = err.response.data;
+                const customError: ServiceError = new Error(responseData.message || 'Tạo người dùng thất bại');
 
-                if (response.code === 'DELETED_USER_EXISTS' && response.data) {
-                    (error as any).code = 'DELETED_USER_EXISTS';
-                    (error as any).data = response.data;
+                if (responseData.code === 'DELETED_USER_EXISTS' && responseData.data) {
+                    customError.code = 'DELETED_USER_EXISTS';
+                    customError.data = responseData.data;
+                } else if (responseData.code === 'VALIDATION_ERROR' && responseData.data) {
+                    customError.validationErrors = responseData.data;
+                } else if (responseData.code === 'EMAIL_EXISTS') {
+                    customError.validationErrors = { email: responseData.message };
                 }
-
-                if (response.code === 'VALIDATION_ERROR' && response.data) {
-                    (error as any).validationErrors = response.data;
-                }
-
-                if (response.code === 'EMAIL_EXISTS') {
-                    (error as any).validationErrors = { email: response.message };
-                }
-
-                throw error;
+                throw customError;
             }
-
-            return response;
-
-        } catch (error: any) {
             throw error;
         }
     },
 
     getUserById: async (id: string): Promise<User> => {
-        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v1';
         const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : '';
 
         try {
-            const res = await fetch(`${API_URL}/users/${id}/details`, {
-                method: 'GET',
+            const response = await axios.get(`${API_URL}/${id}/details`, {
                 headers: {
-                    'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
-                },
+                }
             });
 
-            const response = await res.json();
+            const apiResponse = response.data;
 
-            if (!res.ok || !response.success) {
-                throw new Error(response.message || 'Không thể tải thông tin người dùng');
+            if (!apiResponse.success) {
+                throw new Error(apiResponse.message || 'Không thể tải thông tin người dùng');
             }
 
-            const rootData = response.data;
+            const rootData = apiResponse.data;
             const u = rootData.userInfo;
             return {
                 id: u.id,
@@ -224,90 +203,69 @@ export const userService = {
                 classEnrollments: rootData.classEnrollments || [],
                 taughtClasses: rootData.taughtClasses || [] 
             } as any;
-        } catch (error: any) {
-            throw new Error(error.message || 'Lỗi kết nối Server');
+        } catch (error) {
+            const err = error as AxiosError<BackendApiResponse>;
+            throw new Error(err.response?.data?.message || err.message || 'Lỗi kết nối Server');
         }
     },
 
     updateUser: async (id: string, userData: UpdateUserRequest): Promise<void> => {
-        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v1';
         const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : '';
 
         try {
-            const res = await fetch(`${API_URL}/users/${id}`, {
-                method: 'PUT',
+            await axios.put(`${API_URL}/${id}`, userData, {
                 headers: {
-                    'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify(userData),
+                }
             });
-
-            const response = await res.json();
-
-            if (!res.ok || !response.success) {
-                const error = new Error(response.message || 'Cập nhật thất bại');
+        } catch (error) {
+            const err = error as AxiosError<BackendApiResponse>;
+            if (err.response?.data) {
+                const responseData = err.response.data;
+                const customError: ServiceError = new Error(responseData.message || 'Cập nhật thất bại');
                 
-                if (response.code === 'VALIDATION_ERROR' && response.data) {
-                    (error as any).validationErrors = response.data;
+                if (responseData.code === 'VALIDATION_ERROR' && responseData.data) {
+                    customError.validationErrors = responseData.data;
+                } else if (responseData.code === 'EMAIL_EXISTS') {
+                    customError.validationErrors = { email: responseData.message };
                 }
-                if (response.code === 'EMAIL_EXISTS') {
-                    (error as any).validationErrors = { email: response.message };
-                }
-
-                throw error;
+                throw customError;
             }
-
-        } catch (error: any) {
             throw error;
         }
     },
 
     deleteUser: async (id: string): Promise<void> => {
-        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v1';
         const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : '';
 
         try {
-            const res = await fetch(`${API_URL}/users/${id}`, {
-                method: 'DELETE',
+            await axios.delete(`${API_URL}/${id}`, {
                 headers: {
-                    'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
-                },
+                }
             });
-
-            const data = await res.json();
-
-            if (!res.ok || !data.success) {
-                throw new Error(data.message || 'Xóa người dùng thất bại');
-            }
-
-        } catch (error: any) {
-            throw new Error(error.message || 'Lỗi kết nối Server');
+        } catch (error) {
+            const err = error as AxiosError<BackendApiResponse>;
+            throw new Error(err.response?.data?.message || err.message || 'Lỗi kết nối Server');
         }
     },
 
     restoreUser: async (payload: RestoreUserRequest): Promise<void> => {
-        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v1';
         const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : '';
 
         try {
-            const res = await fetch(`${API_URL}/users/restore`, {
-                method: 'POST',
+            const response = await axios.post(`${API_URL}/restore`, payload, {
                 headers: {
-                    'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify(payload), 
+                }
             });
 
-            const data = await res.json();
-
-            if (!res.ok || !data.success) {
-                throw new Error(data.message || 'Khôi phục tài khoản thất bại');
+            if (!response.data.success) {
+                throw new Error(response.data.message || 'Khôi phục tài khoản thất bại');
             }
-        } catch (error: any) {
-            throw new Error(error.message || 'Lỗi kết nối Server');
+        } catch (error) {
+            const err = error as AxiosError<BackendApiResponse>;
+            throw new Error(err.response?.data?.message || err.message || 'Lỗi kết nối Server');
         }
     },
 };

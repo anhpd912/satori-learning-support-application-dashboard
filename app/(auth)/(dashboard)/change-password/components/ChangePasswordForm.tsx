@@ -35,9 +35,9 @@ export default function ChangePasswordForm() {
             isValid = false;
         }
 
-        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>]).{8,}$/;
         if (!passwordRegex.test(newPassword)) {
-            newErrors.newPassword = 'Mật khẩu chưa đủ mạnh';
+            newErrors.newPassword = 'Mật khẩu phải có ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt';
             isValid = false;
         }
 
@@ -60,7 +60,6 @@ export default function ChangePasswordForm() {
         if (!validate()) return;
 
         setIsLoading(true);
-        // Reset lỗi cũ và toast trước khi gọi API
         setErrors({}); 
         setToast(prev => ({ ...prev, isVisible: false }));
 
@@ -161,7 +160,7 @@ export default function ChangePasswordForm() {
                                 </svg>
                             </div>
                             <p className="text-sm text-gray-500 leading-relaxed">
-                                Mật khẩu phải có ít nhất 8 ký tự, bao gồm cả chữ và số. Tránh sử dụng mật khẩu dễ đoán như tên hoặc ngày sinh.
+                                Mật khẩu phải có ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt.
                             </p>
                         </div>
                     </div>

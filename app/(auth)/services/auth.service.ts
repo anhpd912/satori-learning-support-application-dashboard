@@ -1,5 +1,8 @@
 interface LoginResponse {
     accessToken: string;
+    refreshToken: string;
+    tokenType?: string;
+    expiresIn?: number;
     user: {
         id: string;
         email: string;
@@ -59,6 +62,7 @@ export const authService = {
     logout: () => {
         if (typeof window !== 'undefined') {
             localStorage.removeItem('accessToken');
+            localStorage.removeItem('refreshToken');
             localStorage.removeItem('currentUser');
         }
     },
@@ -147,6 +151,31 @@ export const authService = {
                 throw new Error(data.message || 'Đổi mật khẩu thất bại.');
             }
             return data;
+        } catch (error: any) {
+            throw new Error(error.message || 'Lỗi kết nối Server');
+        }
+    },
+
+    refreshToken: async (refreshToken: string): Promise<LoginResponse> => {
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v1';
+        try {
+            const res = await fetch(`${API_URL}/auth/refresh`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    refreshToken: refreshToken
+                })
+            });
+
+            const data = await res.json();
+
+            if (!res.ok || !data.success) {
+                throw new Error(data.message || 'Phiên đăng nhập hết hạn');
+            }
+
+            return data.data;
         } catch (error: any) {
             throw new Error(error.message || 'Lỗi kết nối Server');
         }

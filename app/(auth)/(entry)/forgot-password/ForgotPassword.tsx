@@ -31,15 +31,15 @@ export default function ForgotPasswordFlow() {
 
             {currentStep === ForgotPasswordStep.OTP_VERIFICATION && (
                 <VerifyOtpForm 
-                    email={sharedData.email} // Truyền email đã nhập ở B1 xuống để hiển thị/gửi lại mã
-                    onVerified={(token) => handleNextStep({ token })} // Nhận token xác thực, chuyển sang B3
-                    onBack={() => setCurrentStep(ForgotPasswordStep.EMAIL_INPUT)} // Quay lại B1 nếu muốn sửa email
+                    email={sharedData.email} 
+                    onVerified={(token) => handleNextStep({ token })}
+                    onBack={() => setCurrentStep(ForgotPasswordStep.EMAIL_INPUT)} 
                 />
             )}
 
             {currentStep === ForgotPasswordStep.NEW_PASSWORD && (
                 <NewPasswordForm 
-                    token={sharedData.token} // Truyền token xuống để gọi API reset
+                    token={sharedData.token}
                 />
             )}
 

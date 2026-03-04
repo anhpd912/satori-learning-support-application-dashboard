@@ -7,7 +7,7 @@ interface PageHeaderProps {
   
   breadcrumb: React.ReactNode;
   
-  backUrl: string;
+  backUrl?: string;
   backLabel?: string;
 
   title?: string;
@@ -19,7 +19,7 @@ interface PageHeaderProps {
 export default function PageHeader({ 
   breadcrumb, 
   backUrl, 
-  backLabel = 'Quay lại danh sách', 
+  backLabel = 'Quay lại', 
   title, 
   description, 
   action 
@@ -31,17 +31,19 @@ export default function PageHeader({
       </div>
       
       <div className="flex justify-between items-end">
-          <Link 
-              href={backUrl} 
-              className="flex items-center gap-2 text-indigo-600 hover:text-indigo-800 text-sm font-medium transition-colors"
-          >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M19 12H5M12 19l-7-7 7-7"/>
-              </svg>
-              {backLabel}
-          </Link>
+          {backUrl && (
+            <Link 
+                href={backUrl} 
+                className="flex items-center gap-2 text-indigo-600 hover:text-indigo-800 text-sm font-medium transition-colors"
+            >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M19 12H5M12 19l-7-7 7-7"/>
+                </svg>
+                {backLabel}
+            </Link>
+          )}
 
-          <div className="text-right">
+          <div className={backUrl ? "text-right" : ""}>
               {action ? (
                 <div>{action}</div>
               ) : (

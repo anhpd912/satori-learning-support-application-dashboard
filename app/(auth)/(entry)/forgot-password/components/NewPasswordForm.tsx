@@ -27,9 +27,9 @@ export default function NewPasswordForm({ token }: Props) {
         const { newPassword, confirmPassword } = formData;
         let isValid = true;
 
-        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>]).{8,}$/;
         if (!passwordRegex.test(newPassword)) {
-            newErrors.newPassword = 'Mật khẩu yếu (Cần 8+ ký tự, Hoa, Thường, Số)';
+            newErrors.newPassword = 'Mật khẩu phải có ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt';
             isValid = false;
         }
 
@@ -86,14 +86,14 @@ export default function NewPasswordForm({ token }: Props) {
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <AuthInput
                         label="Mật khẩu mới"
-                        isPassword={true} // Bật chế độ password (có mắt)
+                        isPassword={true}
                         value={formData.newPassword}
                         onChange={(e) => {
                             setFormData({ ...formData, newPassword: e.target.value });
                             if (errors.newPassword) setErrors({ ...errors, newPassword: undefined });
                         }}
                         placeholder="Nhập mật khẩu mới"
-                        error={errors.newPassword} // Truyền lỗi vào đây
+                        error={errors.newPassword}
                     />
 
                     <AuthInput
@@ -115,7 +115,7 @@ export default function NewPasswordForm({ token }: Props) {
                             </svg>
                         </div>
                         <p className="text-xs text-gray-500 leading-tight">
-                            Mật khẩu phải có ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường và số.
+                            Mật khẩu phải có ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt.
                         </p>
                     </div>
 
