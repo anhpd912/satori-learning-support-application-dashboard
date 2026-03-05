@@ -20,6 +20,7 @@ export default function MyClassesPage() {
     // States cho Filter
     const [searchTerm, setSearchTerm] = useState('');
     const [courseFilter, setCourseFilter] = useState('Tất cả');
+    const [statusFilter, setStatusFilter] = useState('Tất cả');
     const [courseOptions, setCourseOptions] = useState<FilterOption[]>([]);
 
     // States cho Pagination & Data
@@ -65,7 +66,7 @@ export default function MyClassesPage() {
                 currentPage,
                 ITEMS_PER_PAGE,
                 searchTerm,
-                'Tất cả',
+                statusFilter,
                 courseFilter,
                 user.id
             );
@@ -81,7 +82,7 @@ export default function MyClassesPage() {
 
     useEffect(() => {
         if (user) fetchData();
-    }, [currentPage, searchTerm, courseFilter, user]);
+    }, [currentPage, searchTerm, courseFilter, statusFilter, user]);
 
     // 2. Định nghĩa Cột (Columns)
     const columns = useMemo<Column<ClassModel>[]>(() => [
@@ -162,6 +163,8 @@ export default function MyClassesPage() {
                 setSearchTerm={(val) => { setSearchTerm(val); setCurrentPage(1); }}
                 courseFilter={courseFilter}
                 setCourseFilter={(val) => { setCourseFilter(val); setCurrentPage(1); }}
+                statusFilter={statusFilter}
+                setStatusFilter={(val) => { setStatusFilter(val); setCurrentPage(1); }}
                 courses={courseOptions}
             />
 

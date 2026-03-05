@@ -230,7 +230,7 @@ export default function UserManagementPage({ role = 'MANAGER' }: UserListFeature
         isLoading={isDeleting}
       />
 
-      <UserHeader />
+      <UserHeader role={role} />
       
       <UserFilters 
         searchTerm={searchTerm} 

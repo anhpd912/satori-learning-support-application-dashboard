@@ -70,13 +70,22 @@ export default function CreateClassPage() {
         if (!formData.teacherId) { newErrors.teacherId = 'Vui lòng chọn giảng viên'; isValid = false; }
         if (!formData.courseId) { newErrors.courseId = 'Vui lòng chọn khóa học'; isValid = false; }
         
-        if (formData.maxStudents) {
+        if (!formData.maxStudents) {
+            newErrors.maxStudents = 'Vui lòng nhập sĩ số tối đa';
+            isValid = false;
+        } else {
             const max = parseInt(formData.maxStudents, 10);
             if (isNaN(max) || max <= 0) {
                 newErrors.maxStudents = 'Sĩ số phải là số lớn hơn 0';
                 isValid = false;
+            } else if (max > 50) {
+                newErrors.maxStudents = 'Sĩ số tối đa không được vượt quá 50';
+                isValid = false;
             }
         }
+
+        if (!formData.startDate) { newErrors.startDate = 'Vui lòng chọn ngày bắt đầu'; isValid = false; }
+        if (!formData.endDate) { newErrors.endDate = 'Vui lòng chọn ngày kết thúc'; isValid = false; }
 
         if (formData.startDate && formData.endDate) {
             const start = new Date(formData.startDate);
@@ -162,7 +171,7 @@ export default function CreateClassPage() {
                     <div>
                         <FormInput 
                             label="Tên lớp học" 
-                            placeholder="Ví dụ: N3 Cấp tốc - Tháng 10/2023" 
+                            placeholder="Ví dụ: UD102" 
                             value={formData.name}
                             onChange={(e) => handleChange('name', e.target.value)}
                             required
@@ -201,6 +210,7 @@ export default function CreateClassPage() {
                             placeholder="20" 
                             value={formData.maxStudents}
                             onChange={(e) => handleChange('maxStudents', e.target.value)}
+                            required
                             error={errors.maxStudents}
                         />
 
@@ -208,6 +218,7 @@ export default function CreateClassPage() {
                             label="Ngày bắt đầu" 
                             value={formData.startDate}
                             onChange={(e) => handleChange('startDate', e.target.value)}
+                            required
                             error={errors.startDate}
                         />
 
@@ -215,6 +226,7 @@ export default function CreateClassPage() {
                             label="Ngày kết thúc" 
                             value={formData.endDate}
                             onChange={(e) => handleChange('endDate', e.target.value)}
+                            required
                             error={errors.endDate}
                         />
                     </div>

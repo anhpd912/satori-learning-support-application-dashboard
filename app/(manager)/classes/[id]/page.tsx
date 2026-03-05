@@ -337,7 +337,10 @@ export default function ClassDetailPage() {
                                 </div>
                             </div>
 
-                            <button className="w-full py-2.5 bg-white border border-blue-200 text-blue-600 font-bold rounded-lg hover:bg-blue-50 transition-colors text-sm">
+                            <button 
+                                onClick={() => router.push(`/users/${classData.teacherId}`)}
+                                className="w-full py-2.5 bg-white border border-blue-200 text-blue-600 font-bold rounded-lg hover:bg-blue-50 transition-colors text-sm"
+                            >
                                 Xem hồ sơ giảng viên
                             </button>
                         </div>

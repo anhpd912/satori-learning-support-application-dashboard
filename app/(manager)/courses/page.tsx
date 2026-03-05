@@ -16,25 +16,21 @@ const ITEMS_PER_PAGE = 10;
 export default function CourseListPage() {
     const router = useRouter();
 
-    // State cho Filters và Pagination
     const [searchTerm, setSearchTerm] = useState('');
     const [levelFilter, setLevelFilter] = useState('Tất cả');
     const [statusFilter, setStatusFilter] = useState('Tất cả');
     const [currentPage, setCurrentPage] = useState(1);
     
-    // State cho Data
     const [courses, setCourses] = useState<Course[]>([]);
     const [totalItems, setTotalItems] = useState(0);
     const [isLoading, setIsLoading] = useState(true);
 
-    // State cho Modal & Toast
-    const [archiveCourseId, setArchiveCourseId] = useState<string | null>(null);
-    const [isArchiving, setIsArchiving] = useState(false);
+    const [deleteCourseId, setDeleteCourseId] = useState<string | null>(null);
+    const [isDeleting, setIsDeleting] = useState(false);
     const [toast, setToast] = useState<{ message: string; type: ToastType; isVisible: boolean }>({
         message: '', type: 'success', isVisible: false
     });
 
-    // Hàm gọi API (Hiện tại đang dùng Mock data kết hợp setTimeout để giả lập độ trễ mạng)
    const fetchData = async () => {
         setIsLoading(true);
         try {
@@ -47,7 +43,7 @@ export default function CourseListPage() {
             );
 
             setCourses(response.data);
-            setTotalItems(response.total); // Để Pagination tự tính số trang
+            setTotalItems(response.total); 
             
         } catch (error) {
             setToast({ message: 'Lỗi tải dữ liệu khóa học', type: 'error', isVisible: true });
@@ -60,24 +56,21 @@ export default function CourseListPage() {
         fetchData();
     }, [currentPage, searchTerm, levelFilter, statusFilter]);
 
-    // Hành động Lưu trữ (Archive) khóa học
-    const confirmArchive = async () => {
-        if (!archiveCourseId) return;
-        setIsArchiving(true);
+    const confirmDelete = async () => {
+        if (!deleteCourseId) return;
+        setIsDeleting(true);
         try {
-            // Cập nhật trạng thái khóa học thành INACTIVE
-            await courseService.updateCourse(archiveCourseId, { status: 'INACTIVE' });
-            setToast({ message: 'Lưu trữ khóa học thành công', type: 'success', isVisible: true });
-            setArchiveCourseId(null);
-            fetchData(); // Tải lại dữ liệu để cập nhật UI
+            await courseService.deleteCourse(deleteCourseId);
+            setToast({ message: 'Xóa khóa học thành công', type: 'success', isVisible: true });
+            setDeleteCourseId(null);
+            fetchData(); 
         } catch (err: any) {
-            setToast({ message: err.message || 'Lỗi khi lưu trữ', type: 'error', isVisible: true });
+            setToast({ message: err.message || 'Lỗi khi xóa khóa học', type: 'error', isVisible: true });
         } finally {
-            setIsArchiving(false);
+            setIsDeleting(false);
         }
     };
 
-    // 2. Định nghĩa Cột cho CommonTable
     const columns = useMemo<Column<Course>[]>(() => [
         {
             header: 'Tên',
@@ -130,7 +123,6 @@ export default function CourseListPage() {
             className: 'text-right',
             render: (course) => (
                 <div className="flex items-center justify-end gap-4 text-gray-400">
-                    {/* View Button */}
                     <button 
                         title="Xem chi tiết" 
                         className="hover:text-blue-600 transition-colors"
@@ -142,7 +134,6 @@ export default function CourseListPage() {
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                     </button>
                     
-                    {/* Edit Button */}
                     <button 
                         title="Chỉnh sửa" 
                         className="hover:text-gray-900 transition-colors"
@@ -154,16 +145,17 @@ export default function CourseListPage() {
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                     </button>
 
-                    {/* Archive Button */}
+                    
                     <button 
-                        title="Lưu trữ" 
+                        title="Xóa" 
                         className="hover:text-red-500 transition-colors"
                         onClick={(e) => {
                             e.stopPropagation();
-                            setArchiveCourseId(course.id);
+                            setDeleteCourseId(course.id);
                         }}
                     >
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+                        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg"><g clipPath="url(#clip0_1177_405)"><path d="M2.25 4.5H15.75M14.25 4.5V15C14.25 15.75 13.5 16.5 12.75 16.5H5.25C4.5 16.5 3.75 15.75 3.75 15V4.5M6 4.5V3C6 2.25 6.75 1.5 7.5 1.5H10.5C11.25 1.5 12 2.25 12 3V4.5M7.5 8.25V12.75M10.5 8.25V12.75" stroke="#F87171" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></g><defs><clipPath id="clip0_1177_405"><rect width="18" height="18" fill="white"/></clipPath></defs></svg>
+
                     </button>
                 </div>
             )
@@ -183,14 +175,14 @@ export default function CourseListPage() {
 
             {/* Component Xác nhận Lưu trữ/Xóa */}
             <ConfirmModal 
-                isOpen={!!archiveCourseId}
-                onClose={() => setArchiveCourseId(null)}
-                onConfirm={confirmArchive}
-                title="Lưu trữ khóa học?"
-                message="Khóa học này sẽ được chuyển vào mục lưu trữ và ẩn khỏi người dùng. Bạn có chắc chắn không?"
-                confirmText="Lưu trữ"
+                isOpen={!!deleteCourseId}
+                onClose={() => setDeleteCourseId(null)}
+                onConfirm={confirmDelete}
+                title="Xóa khóa học?"
+                message="Khóa học này sẽ bị xóa vĩnh viễn và không thể khôi phục. Bạn có chắc chắn không?"
+                confirmText="Xóa"
                 variant="danger"
-                isLoading={isArchiving}
+                isLoading={isDeleting}
             />
 
             <div className="flex justify-between items-center mb-6">

@@ -223,6 +223,26 @@ class CourseService {
             throw error;
         }
     }
+
+    async deleteCourse(id: string): Promise<void> {
+        const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : '';
+
+        try {
+            const response = await axios.delete(`${this.API_URL}/${id}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            if (!response.data.success) {
+                throw new Error(response.data.message || 'Xóa khóa học thất bại');
+            }
+        } catch (error: any) {
+            if (error.response?.data?.message) {
+                throw new Error(error.response.data.message);
+            }
+            throw new Error(error.message || 'Lỗi khi xóa khóa học');
+        }
+    }
 }
 
 export const courseService = new CourseService();

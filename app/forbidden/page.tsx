@@ -32,7 +32,6 @@ export default function ForbiddenPage() {
         
         <p className="text-gray-600 mb-8 leading-relaxed">
           Xin lỗi, bạn không có quyền truy cập vào trang này.<br/>
-          Trang này chỉ dành cho tài khoản <strong>Quản trị viên (Admin)</strong>.
         </p>
 
         <div className="flex flex-col gap-3">
