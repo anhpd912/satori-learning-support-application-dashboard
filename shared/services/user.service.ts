@@ -113,13 +113,16 @@ export const userService = {
                     id: u.id,
                     name: displayName,
                     email: u.email,
+                    displayName: u.displayName || displayName,
                     role: u.role as User['role'], 
                     status: u.status as User['status'], 
                     avatarUrl: u.avatarUrl 
                         ? u.avatarUrl 
                         : `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=random&color=fff`,
                     
-                    phoneNumber: u.phoneNumber || '', 
+                    phoneNumber: u.phoneNumber || '',
+                    dateOfBirth: u.dateOfBirth || '',
+                    createdAt: u.createdAt || new Date().toISOString()
                 };
             });
 

@@ -79,17 +79,12 @@ export default function ImportAIPage() {
 
             {/* BREADCRUMB & HEADER */}
             <PageHeader 
-                breadcrumb={
-                    <div className="flex items-center gap-2 text-sm text-gray-500">
-                        <Link href="/courses" className="hover:text-gray-900">Quản lí khóa học</Link>
-                        <span>&gt;</span>
-                        <Link href={`/courses/${courseId}`} className="hover:text-gray-900">N1</Link>
-                        <span>&gt;</span>
-                        <Link href={`/courses/${courseId}/lessons`} className="hover:text-gray-900">Quản lý nội dung bài học</Link>
-                        <span>&gt;</span>
-                        <span className="text-gray-900 font-medium">Nhập giáo trình</span>
-                    </div>
-                }
+                breadcrumb={[
+                    { label: 'Quản lí khóa học', href: '/courses' },
+                    { label: 'N1', href: `/courses/${courseId}` },
+                    { label: 'Quản lý nội dung bài học', href: `/courses/${courseId}/lessons` },
+                    { label: 'Nhập giáo trình', active: true }
+                ]}
                 backUrl={`/courses/${courseId}/lessons`}
                 title="Nhập giáo trình"
             />

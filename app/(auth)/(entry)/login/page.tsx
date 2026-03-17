@@ -95,7 +95,7 @@ export default function LoginPage() {
                 router.push('/my-classes'); 
                 break;
             default:
-                router.push('/dashboard');
+                router.push('/forbidden');
         }
 
     } catch (err: unknown) {

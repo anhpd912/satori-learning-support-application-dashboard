@@ -1,4 +1,4 @@
-import axios from 'axios';
+import api from '@/lib/axios';
 
 export interface Course {
     id: string;
@@ -88,13 +88,8 @@ class CourseService {
                 params.append('status', mappedStatus);
             }
 
-            const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : '';
-
-            const response = await axios.get<ApiResponse<PageResponse<Course>>>(this.API_URL, { 
-                params: params,
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
+            const response = await api.get<ApiResponse<PageResponse<Course>>>(this.API_URL, { 
+                params: params
             });
 
             const responseData = response.data.data;
@@ -127,33 +122,24 @@ class CourseService {
     }
 
     async createCourse(payload: CreateCoursePayload, thumbnailFile?: File) {
-        const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : '';
-
         const formData = new FormData();
         
-        // Backend yêu cầu @RequestPart("request") là một JSON object
         const requestPart = {
             name: payload.name,
             description: payload.description,
             jlptLevel: payload.jlptLevel,
             orderIndex: payload.orderIndex,
-            thumbnailUrl: payload.thumbnailUrl // Giữ lại nếu backend vẫn dùng trường này làm fallback
+            thumbnailUrl: payload.thumbnailUrl
         };
 
-        // Append JSON object dưới dạng Blob với type application/json
         formData.append('request', new Blob([JSON.stringify(requestPart)], { type: 'application/json' }));
 
-        // Backend yêu cầu @RequestPart("thumbnail") là file
         if (thumbnailFile) {
             formData.append('thumbnail', thumbnailFile);
         }
 
         try {
-            const response = await axios.post(this.API_URL, formData, {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
+            const response = await api.post(this.API_URL, formData);
             return response.data;
         } catch (error) {
             console.error("Lỗi khi tạo khóa học:", error);
@@ -162,15 +148,8 @@ class CourseService {
     }
 
     async getCourseById(id: string): Promise<CourseDetail> {
-        const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : '';
-
         try {
-            const response = await axios.get<ApiResponse<CourseDetail>>(`${this.API_URL}/${id}`, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-            });
+            const response = await api.get<ApiResponse<CourseDetail>>(`${this.API_URL}/${id}`);
 
             if (!response.data.success) {
                 throw new Error(response.data.message || 'Không thể tải thông tin khóa học');
@@ -186,11 +165,9 @@ class CourseService {
     }
 
     async updateCourse(id: string, payload: UpdateCoursePayload, thumbnailFile?: File): Promise<void> {
-        const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : '';
 
         const formData = new FormData();
         
-        // Map payload vào requestPart JSON
         const requestPart = {
             name: payload.name,
             description: payload.description,
@@ -207,11 +184,7 @@ class CourseService {
         }
 
         try {
-            await axios.put(`${this.API_URL}/${id}`, formData, {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
+            await api.put(`${this.API_URL}/${id}`, formData);
         } catch (error: any) {
             if (error.response?.data) {
                 const responseData = error.response.data;
@@ -221,6 +194,20 @@ class CourseService {
                 throw new Error(responseData.message || 'Cập nhật khóa học thất bại');
             }
             throw error;
+        }
+    }
+
+    async deleteCourse(id: string): Promise<void> {
+        try {
+            const response = await api.delete(`${this.API_URL}/${id}`);
+            if (!response.data.success) {
+                throw new Error(response.data.message || 'Xóa khóa học thất bại');
+            }
+        } catch (error: any) {
+            if (error.response?.data?.message) {
+                throw new Error(error.response.data.message);
+            }
+            throw new Error(error.message || 'Lỗi khi xóa khóa học');
         }
     }
 }

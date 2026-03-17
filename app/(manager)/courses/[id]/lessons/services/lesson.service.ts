@@ -1,4 +1,5 @@
-import axios, { AxiosError } from 'axios';
+import { AxiosError } from 'axios';
+import api from '@/lib/axios';
 
 /**
  * Phản hồi từ API sau khi yêu cầu nhập liệu được chấp nhận.
@@ -16,8 +17,6 @@ interface ApiResponse<T> {
     data: T;
 }
 
-const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v1') + '/manager/curriculum-imports';
-
 export const lessonImportService = {
     /**
      * Gửi file PDF lên backend để AI phân tích và bóc tách.
@@ -26,15 +25,15 @@ export const lessonImportService = {
      * @returns Dữ liệu phản hồi từ API.
      */
     importByAI: async (file: File, courseId: string): Promise<CurriculumImportResponse> => {
-        const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : '';
-
         const formData = new FormData();
         formData.append('file', file);
         formData.append('courseId', courseId);
 
         try {
-            const response = await axios.post<ApiResponse<CurriculumImportResponse>>(API_URL, formData, {
-                headers: { 'Authorization': `Bearer ${token}` }
+            const response = await api.post<ApiResponse<CurriculumImportResponse>>('/manager/curriculum-imports', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                }
             });
             if (!response.data.success) throw new Error(response.data.message);
             return response.data.data;
