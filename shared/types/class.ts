@@ -10,6 +10,7 @@ export interface ClassBackendDTO {
     courseStatus: string;
     isActive: boolean;
     memberCount: number;
+    maxStudents: number | null;
 }
 
 // Interface dữ liệu dùng trong Frontend (Model)
@@ -19,6 +20,7 @@ export interface ClassModel {
     course: string;
     teacherName: string;
     studentCount: number;
+    maxStudents: number | null;
     status: 'Active' | 'Inactive';
 }
 

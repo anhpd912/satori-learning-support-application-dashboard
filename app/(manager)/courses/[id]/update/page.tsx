@@ -18,14 +18,12 @@ export default function EditCoursePage() {
     
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    // Thêm state isFetching để chờ gọi dữ liệu cũ
     const [isFetching, setIsFetching] = useState(true);
     const [isLoading, setIsLoading] = useState(false);
     
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [generalError, setGeneralError] = useState('');
 
-    // Thêm trường status vào formData
     const [formData, setFormData] = useState({
         name: '',
         level: '',
@@ -40,7 +38,6 @@ export default function EditCoursePage() {
         message: '', type: 'success', isVisible: false
     });
 
-    // Cấu hình options
     const levelOptions = useMemo(() => [
         { label: 'N1', value: 'N1' },
         { label: 'N2', value: 'N2' },
@@ -54,7 +51,6 @@ export default function EditCoursePage() {
         { label: 'Không hoạt động (INACTIVE)', value: 'INACTIVE' },
     ], []);
 
-    // 1. GỌI API ĐỂ ĐỔ DỮ LIỆU CŨ VÀO FORM
     useEffect(() => {
         const fetchCourseData = async () => {
             if (!courseId) return;
@@ -131,7 +127,6 @@ export default function EditCoursePage() {
         setGeneralError('');
 
         try {
-            // Khớp với UpdateCoursePayload
             const payload = {
                 name: formData.name.trim(),
                 description: formData.description.trim() || undefined,
@@ -139,12 +134,10 @@ export default function EditCoursePage() {
                 status: formData.status 
             };
 
-            // Bắn API gọi Backend, truyền file ảnh nếu có
             await courseService.updateCourse(courseId, payload, thumbnailFile || undefined);
             
             setToast({ message: 'Cập nhật khóa học thành công!', type: 'success', isVisible: true });
             
-            // Cập nhật xong thì quay lại trang Chi tiết
             setTimeout(() => router.push(`/courses/${courseId}`), 1500);
 
         } catch (error: any) {
@@ -159,7 +152,6 @@ export default function EditCoursePage() {
         }
     };
 
-    // Hiện loading nếu đang tải dữ liệu khóa học
     if (isFetching) {
         return (
             <div className="p-8 bg-gray-50 min-h-screen flex justify-center items-center w-full">
@@ -176,15 +168,11 @@ export default function EditCoursePage() {
             />
 
             <PageHeader 
-                breadcrumb={
-                    <>
-                        <Link href="/courses" className="hover:text-gray-900 transition-colors">Quản lí khóa học</Link>
-                        <span className="mx-1">{'>'}</span> 
-                        <Link href={`/courses/${courseId}`} className="hover:text-gray-900 transition-colors">Chi tiết</Link>
-                        <span className="mx-1">{'>'}</span> 
-                        <span className="text-gray-900 font-medium">Chỉnh sửa</span>
-                    </>
-                }
+                breadcrumb={[
+                    { label: 'Quản lí khóa học', href: '/courses' },
+                    { label: 'Chi tiết', href: `/courses/${courseId}` },
+                    { label: 'Chỉnh sửa', active: true }
+                ]}
                 backUrl={`/courses/${courseId}`} 
                 title="Chỉnh sửa khóa học"
                 description={`Cập nhật thông tin khóa học`}
@@ -202,7 +190,6 @@ export default function EditCoursePage() {
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-6 max-w-4xl mx-auto">
                 <form onSubmit={handleSubmit} className="space-y-6">
                     
-                    {/* Hàng 1: Tên khóa học (Chiếm trọn hàng) */}
                     <div>
                         <FormInput 
                             label="Tên khóa học" 
@@ -214,7 +201,6 @@ export default function EditCoursePage() {
                         />
                     </div>
                     
-                    {/* Hàng 2: Cấp độ và Trạng thái */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <FormSelect 
                             label="Cấp độ"
@@ -237,7 +223,6 @@ export default function EditCoursePage() {
                         />
                     </div>
 
-                    {/* Hàng 3: Mô tả */}
                     <div className="mt-6">
                         <FormTextarea 
                             label="Mô tả khóa học"
@@ -250,7 +235,6 @@ export default function EditCoursePage() {
                         />
                     </div>
 
-                    {/* Hàng 4: Upload Ảnh */}
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                             Ảnh đại diện (Thumbnail)
@@ -282,7 +266,6 @@ export default function EditCoursePage() {
                         </div>
                     </div>
 
-                    {/* Footer Buttons */}
                     <div className="flex justify-end gap-4 pt-4 border-t border-gray-100 mt-8">
                         <Link href={`/courses/${courseId}`}>
                             <button type="button" className="px-6 py-2.5 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-50 transition-colors">

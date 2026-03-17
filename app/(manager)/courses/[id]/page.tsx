@@ -80,14 +80,12 @@ export default function CourseDetailPage() {
             
             {/* 1. BREADCRUMB & BACK BUTTON */}
             <PageHeader 
-                breadcrumb={
-                    <div className="flex items-center gap-2">
-                        <Link href="/courses" className="hover:text-gray-900 transition-colors">Quản lí khóa học</Link>
-                        <span className="mx-1">{'>'}</span> 
-                        <span className="text-gray-900 font-medium">Chi tiết</span>
-                    </div>
-                }
+                breadcrumb={[
+                    { label: 'Quản lí khóa học', href: '/courses' },
+                    { label: 'Chi tiết', active: true }
+                ]}
                 backUrl="/courses" 
+                title={course.name}
             />
 
             {/* 2. MAIN CARD */}
@@ -116,9 +114,7 @@ export default function CourseDetailPage() {
 
                     {/* Nội dung chi tiết */}
                     <div className="flex-1 flex flex-col pt-2">
-                        {/* Tiêu đề & Trạng thái */}
                         <div className="flex items-center gap-4 mb-6">
-                            <h1 className="text-3xl font-bold text-gray-900">{course.name}</h1>
                             {getStatusBadge(course.status)}
                         </div>
 
