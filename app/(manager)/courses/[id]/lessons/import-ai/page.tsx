@@ -52,11 +52,11 @@ export default function ImportAIPage() {
     const handleConfirmUpload = async () => {
         if (!file) return;
         setIsUploading(true);
-        
+
         try {
             const response = await curriculumImportService.initiateImport(file, courseId);
             setToast({ message: 'Tệp đã được chấp nhận! Hệ thống đang bắt đầu phân tích...', type: 'success', isVisible: true });
-            
+
             // Redirect to history after 2s to track progress
             setTimeout(() => router.push(`/courses/${courseId}/lessons/import-history`), 2000);
         } catch (error: any) {
@@ -68,41 +68,35 @@ export default function ImportAIPage() {
 
     return (
         <div className="p-8 bg-gray-50 min-h-screen font-sans w-full flex flex-col">
-            <Toast 
-                message={toast.message} type={toast.type} 
+            <Toast
+                message={toast.message} type={toast.type}
                 isVisible={toast.isVisible} onClose={() => setToast(prev => ({ ...prev, isVisible: false }))}
             />
 
-            <PageHeader 
-                breadcrumb={(
-                    <div className="flex items-center gap-2">
-                        <Link href="/courses" className="hover:text-indigo-600 transition-colors">Quản lí khóa học</Link>
-                        <span className="text-gray-400">/</span>
-                        <Link href={`/courses/${courseId}`} className="hover:text-indigo-600 transition-colors">N1</Link>
-                        <span className="text-gray-400">/</span>
-                        <Link href={`/courses/${courseId}/lessons`} className="hover:text-indigo-600 transition-colors">Quản lý nội dung bài học</Link>
-                        <span className="text-gray-400">/</span>
-                        <span className="text-gray-900 font-medium">Nhập giáo trình</span>
-                    </div>
-                )}
+            <PageHeader
+                breadcrumb={[
+                    { label: 'Quản lí khóa học', href: '/courses' },
+                    { label: 'N1', href: `/courses/${courseId}` },
+                    { label: 'Quản lý nội dung bài học', href: `/courses/${courseId}/lessons` },
+                    { label: 'Nhập giáo trình', active: true }
+                ]}
                 backUrl={`/courses/${courseId}/lessons`}
                 title="Nhập giáo trình bằng AI"
                 description="Hệ thống sẽ tự động phân tích và bóc tách từ vựng, ngữ pháp từ tệp PDF giáo trình của bạn."
             />
 
             <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-10 flex-1 flex flex-col">
-                <div 
+                <div
                     onDragOver={handleDragOver}
                     onDragLeave={handleDragLeave}
                     onDrop={handleDrop}
-                    className={`flex-1 flex flex-col items-center justify-center border-2 border-dashed rounded-[32px] transition-all duration-300 relative ${
-                        isDragging ? 'border-blue-500 bg-blue-50' : 'border-gray-200 bg-white'
-                    }`}
+                    className={`flex-1 flex flex-col items-center justify-center border-2 border-dashed rounded-[32px] transition-all duration-300 relative ${isDragging ? 'border-blue-500 bg-blue-50' : 'border-gray-200 bg-white'
+                        }`}
                 >
-                    <input 
-                        type="file" 
-                        ref={fileInputRef} 
-                        className="hidden" 
+                    <input
+                        type="file"
+                        ref={fileInputRef}
+                        className="hidden"
                         accept=".pdf"
                         onChange={(e) => e.target.files && handleFileChange(e.target.files[0])}
                     />
@@ -120,8 +114,8 @@ export default function ImportAIPage() {
                             <div className="space-y-2">
                                 <p className="text-lg font-bold text-gray-900">Tệp đã chọn:</p>
                                 <p className="text-blue-600 font-medium italic underline">{file.name}</p>
-                                <button 
-                                    onClick={() => setFile(null)} 
+                                <button
+                                    onClick={() => setFile(null)}
                                     className="text-red-500 text-xs hover:underline mt-2"
                                 >
                                     Thay đổi tệp khác
@@ -131,8 +125,8 @@ export default function ImportAIPage() {
                             <>
                                 <h3 className="text-xl font-bold text-gray-900 mb-2">Kéo và thả tệp PDF vào đây</h3>
                                 <p className="text-gray-400 mb-8">Hoặc nhấn để chọn tệp từ máy tính của bạn</p>
-                                
-                                <button 
+
+                                <button
                                     onClick={() => fileInputRef.current?.click()}
                                     className="flex items-center gap-2 px-6 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 shadow-sm transition-all"
                                 >
@@ -150,13 +144,13 @@ export default function ImportAIPage() {
             </div>
 
             <div className="mt-8 flex justify-end items-center gap-6">
-                <button 
+                <button
                     onClick={() => router.back()}
                     className="text-gray-500 font-medium hover:text-gray-700 transition-colors"
                 >
                     Hủy bỏ
                 </button>
-                <button 
+                <button
                     onClick={handleConfirmUpload}
                     disabled={!file || isUploading}
                     className="flex items-center gap-3 px-8 py-3 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-xl shadow-lg shadow-blue-200 transition-all disabled:opacity-50 disabled:shadow-none"

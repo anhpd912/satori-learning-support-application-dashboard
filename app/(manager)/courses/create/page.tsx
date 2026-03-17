@@ -120,9 +120,10 @@ export default function CreateCoursePage() {
             />
 
             <PageHeader 
-                breadcrumb={
-                    <>Quản lí khóa học <span className="mx-1">{'>'}</span> <span className="text-gray-900 font-medium">Tạo khóa học mới</span></>
-                }
+                breadcrumb={[
+                    { label: 'Quản lí khóa học', href: '/courses' },
+                    { label: 'Tạo khóa học mới', active: true }
+                ]}
                 backUrl="/courses" 
                 title="Tạo khóa học mới"
                 description="Tạo khóa học mới cho ứng dụng"
