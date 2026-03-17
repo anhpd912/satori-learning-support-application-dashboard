@@ -5,7 +5,7 @@ import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import PageHeader from '@/shared/components/PageHeader';
 import Toast, { ToastType } from '@/shared/components/Toast';
-import { lessonImportService } from '../services/lesson.service';
+import { curriculumImportService } from '@/shared/services/curriculumImport.service';
 
 export default function ImportAIPage() {
     const router = useRouter();
@@ -21,7 +21,6 @@ export default function ImportAIPage() {
         message: '', type: 'success', isVisible: false
     });
 
-    // Xử lý khi chọn file
     const handleFileChange = (selectedFile: File) => {
         if (selectedFile.type !== 'application/pdf') {
             setToast({ message: 'Chỉ hỗ trợ định dạng tệp PDF', type: 'error', isVisible: true });
@@ -34,7 +33,6 @@ export default function ImportAIPage() {
         setFile(selectedFile);
     };
 
-    // Logic Kéo & Thả
     const handleDragOver = (e: React.DragEvent) => {
         e.preventDefault();
         setIsDragging(true);
@@ -51,18 +49,16 @@ export default function ImportAIPage() {
         if (droppedFile) handleFileChange(droppedFile);
     };
 
-    // Gửi dữ liệu lên Server
     const handleConfirmUpload = async () => {
         if (!file) return;
         setIsUploading(true);
         
         try {
-            const response = await lessonImportService.importByAI(file, courseId);
-            console.log('Import initiated:', response);
-            
+            const response = await curriculumImportService.initiateImport(file, courseId);
             setToast({ message: 'Tệp đã được chấp nhận! Hệ thống đang bắt đầu phân tích...', type: 'success', isVisible: true });
             
-            setTimeout(() => router.push(`/courses/${courseId}/lessons`), 2000);
+            // Redirect to history after 2s to track progress
+            setTimeout(() => router.push(`/courses/${courseId}/lessons/import-history`), 2000);
         } catch (error: any) {
             setToast({ message: error.message || 'Có lỗi xảy ra khi tải tệp lên', type: 'error', isVisible: true });
         } finally {
@@ -77,33 +73,24 @@ export default function ImportAIPage() {
                 isVisible={toast.isVisible} onClose={() => setToast(prev => ({ ...prev, isVisible: false }))}
             />
 
-            {/* BREADCRUMB & HEADER */}
             <PageHeader 
-                breadcrumb={
-                    <div className="flex items-center gap-2 text-sm text-gray-500">
-                        <Link href="/courses" className="hover:text-gray-900">Quản lí khóa học</Link>
-                        <span>&gt;</span>
-                        <Link href={`/courses/${courseId}`} className="hover:text-gray-900">N1</Link>
-                        <span>&gt;</span>
-                        <Link href={`/courses/${courseId}/lessons`} className="hover:text-gray-900">Quản lý nội dung bài học</Link>
-                        <span>&gt;</span>
+                breadcrumb={(
+                    <div className="flex items-center gap-2">
+                        <Link href="/courses" className="hover:text-indigo-600 transition-colors">Quản lí khóa học</Link>
+                        <span className="text-gray-400">/</span>
+                        <Link href={`/courses/${courseId}`} className="hover:text-indigo-600 transition-colors">N1</Link>
+                        <span className="text-gray-400">/</span>
+                        <Link href={`/courses/${courseId}/lessons`} className="hover:text-indigo-600 transition-colors">Quản lý nội dung bài học</Link>
+                        <span className="text-gray-400">/</span>
                         <span className="text-gray-900 font-medium">Nhập giáo trình</span>
                     </div>
-                }
+                )}
                 backUrl={`/courses/${courseId}/lessons`}
-                title="Nhập giáo trình"
+                title="Nhập giáo trình bằng AI"
+                description="Hệ thống sẽ tự động phân tích và bóc tách từ vựng, ngữ pháp từ tệp PDF giáo trình của bạn."
             />
 
             <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-10 flex-1 flex flex-col">
-                {/* Phần giới thiệu AI */}
-                <div className="mb-10">
-                    <h2 className="text-2xl font-bold text-gray-900 mb-4">Nạp giáo trình bằng AI</h2>
-                    <p className="text-gray-500 leading-relaxed max-w-4xl">
-                        Hệ thống sẽ tự động phân tích và bóc tách (chunking) từ vựng, ngữ pháp từ tệp PDF giáo trình của bạn bằng công nghệ xử lý ngôn ngữ tự nhiên.
-                    </p>
-                </div>
-
-                {/* KHU VỰC UPLOAD (DRAG & DROP) */}
                 <div 
                     onDragOver={handleDragOver}
                     onDragLeave={handleDragLeave}
@@ -120,7 +107,6 @@ export default function ImportAIPage() {
                         onChange={(e) => e.target.files && handleFileChange(e.target.files[0])}
                     />
 
-                    {/* Icon và Text */}
                     <div className="flex flex-col items-center text-center p-6">
                         <div className="w-20 h-20 bg-blue-50 rounded-2xl flex items-center justify-center mb-6">
                             <svg width="40" height="40" viewBox="0 0 24 24" fill="none" className="text-blue-500" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -156,16 +142,13 @@ export default function ImportAIPage() {
                             </>
                         )}
 
-                        {/* Hint nhỏ dưới cùng */}
                         <div className="mt-6 flex items-center gap-2 text-xs text-gray-400 bg-gray-50 px-4 py-2 rounded-full">
                             Chỉ hỗ trợ định dạng .pdf (Tối đa 100MB)
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
                         </div>
                     </div>
                 </div>
             </div>
 
-            {/* FOOTER ACTIONS */}
             <div className="mt-8 flex justify-end items-center gap-6">
                 <button 
                     onClick={() => router.back()}

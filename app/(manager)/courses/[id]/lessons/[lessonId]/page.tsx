@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { useRouter, useParams } from 'next/navigation';
+import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 
 import CommonTable, { Column } from '@/shared/components/CommonTable';
@@ -79,8 +79,11 @@ const ITEMS_PER_PAGE = 4;
 export default function LessonDetailPage() {
     const router = useRouter();
     const params = useParams();
-    const courseId = params?.courseId as string;
+    const searchParams = useSearchParams();
+    
+    const courseId = params?.id as string;
     const lessonId = params?.lessonId as string;
+    const importId = searchParams?.get('importId');
 
     const courseName = "N1"; 
 
@@ -295,17 +298,42 @@ export default function LessonDetailPage() {
                         <span className="mx-1 text-gray-400">{'>'}</span> 
                         <Link href={`/courses/${courseId}`} className="hover:text-gray-900 transition-colors">{courseName}</Link>
                         <span className="mx-1 text-gray-400">{'>'}</span> 
-                        <Link href={`/courses/${courseId}/lessons`} className="hover:text-gray-900 transition-colors">Quản lý nội dung bài học</Link>
+                        <Link href={`/courses/${courseId}/lessons${importId ? `?importId=${importId}` : ''}`} className="hover:text-gray-900 transition-colors">
+                            {importId ? 'Review Import' : 'Quản lý nội dung bài học'}
+                        </Link>
                         <span className="mx-1 text-gray-400">{'>'}</span> 
                         <span className="text-gray-900 font-medium">{lessonInfo.title}</span>
                     </div>
-                    <Link href={`/courses/${courseId}/lessons`} className="flex items-center gap-2 text-[#253A8C] font-medium text-sm hover:underline">
+                    <Link href={`/courses/${courseId}/lessons${importId ? `?importId=${importId}` : ''}`} className="flex items-center gap-2 text-[#253A8C] font-medium text-sm hover:underline">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-                        Quay lại
+                        Quay lại {importId ? 'danh sách review' : ''}
                     </Link>
                 </div>
-                <h1 className="text-3xl font-bold text-gray-900">Nội dung chi tiết</h1>
+                <h1 className="text-3xl font-bold text-gray-900">Chi tiết bài học {importId ? '(Review AI)' : ''}</h1>
             </div>
+
+            {/* STICKY REVIEW BANNER */}
+            {importId && (
+                <div className="sticky top-4 z-50 bg-indigo-600 rounded-2xl p-5 mb-8 text-white flex flex-col md:flex-row items-center justify-between gap-4 shadow-xl shadow-indigo-100 border border-indigo-400 animate-in fade-in slide-in-from-top-4">
+                    <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center shrink-0">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                        </div>
+                        <div>
+                            <h3 className="font-bold">Đang xem xét nội dung AI bóc tách</h3>
+                            <p className="text-indigo-100 text-xs text-opacity-80">Bạn có thể chỉnh sửa trực tiếp nội dung bài học này bên dưới trước khi phê duyệt toàn bộ batch.</p>
+                        </div>
+                    </div>
+                    <div className="flex gap-2">
+                        <button 
+                            onClick={() => router.push(`/courses/${courseId}/lessons?importId=${importId}`)}
+                            className="px-4 py-2 bg-white/10 hover:bg-white/20 border border-white/20 rounded-xl text-xs font-bold transition-all"
+                        >
+                            Về danh sách batch
+                        </button>
+                    </div>
+                </div>
+            )}
 
             {/* CARD THÔNG TIN CƠ BẢN */}
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mb-8 relative">
