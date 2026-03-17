@@ -1,7 +1,7 @@
 'use client';
 
 import React, { use } from 'react';
-import UserDetailFeature from '@/shared/features/users/UserDetailFeature';
+import UserDetailFeature from '@/features/users/UserDetailFeature';
 
 export default function AdminUserDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);

@@ -142,13 +142,10 @@ export default function ClassDetailPage() {
 
             {/* HEADER */}
             <PageHeader 
-                breadcrumb={
-                    <div className="flex items-center gap-2">
-                        <Link href="/my-classes" className="hover:text-gray-900 transition-colors">Lớp học của tôi</Link>
-                        <span className="mx-1 text-gray-400">{'>'}</span> 
-                        <span className="text-gray-900 font-medium">Chi tiết lớp</span>
-                    </div>
-                }
+                breadcrumb={[
+                    { label: 'Lớp học của tôi', href: '/my-classes' },
+                    { label: 'Chi tiết lớp', active: true }
+                ]}
                 backUrl="/my-classes" 
                 title="Chi tiết lớp học"
                 description="Quản lý thông tin chung và danh sách học viên tham gia khóa học này."

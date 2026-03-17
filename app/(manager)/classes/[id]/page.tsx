@@ -10,7 +10,7 @@ import InfoItem from '@/shared/components/InfoItem';
 import ConfirmModal from '@/shared/components/ConfirmModal';
 import Pagination from '@/shared/components/Pagination';
 import { classService, ClassResponse, ClassMemberResponse } from '@/shared/services/class.service';
-import AddStudentModal from '@/shared/features/classes/components/AddStudentModal';
+import AddStudentModal from '@/features/classes/components/AddStudentModal';
 
 const ITEMS_PER_PAGE = 5;
 
@@ -213,13 +213,10 @@ export default function ClassDetailPage() {
 
             {/* HEADER */}
             <PageHeader 
-                breadcrumb={
-                    <div className="flex items-center gap-2">
-                        <Link href="/classes" className="hover:text-gray-900 transition-colors">Quản lí lớp học</Link>
-                        <span className="mx-1 text-gray-400">{'>'}</span> 
-                        <span className="text-gray-900 font-medium">Chi tiết lớp</span>
-                    </div>
-                }
+                breadcrumb={[
+                    { label: 'Quản lí lớp học', href: '/classes' },
+                    { label: 'Chi tiết lớp', active: true }
+                ]}
                 backUrl="/classes" 
                 title="Chi tiết lớp học"
                 description="Quản lý thông tin chung và danh sách học viên tham gia khóa học này."

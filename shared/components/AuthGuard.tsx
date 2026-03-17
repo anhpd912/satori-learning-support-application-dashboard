@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 
 interface AuthGuardProps {
     children: React.ReactNode;
-    allowedRoles: string[]; // Mảng chứa các role được phép vào
+    allowedRoles: string[];
 }
 
 export default function AuthGuard({ children, allowedRoles }: AuthGuardProps) {
@@ -13,34 +13,29 @@ export default function AuthGuard({ children, allowedRoles }: AuthGuardProps) {
     const [isAuthorized, setIsAuthorized] = useState(false);
 
     useEffect(() => {
-        const storedUser = localStorage.getItem('currentUser');
-        const accessToken = localStorage.getItem('accessToken');
+        const raw = localStorage.getItem('currentUser');
 
-        // 1. Không có vé -> Đuổi về Login
-        if (!storedUser || !accessToken) {
+        if (!raw) {
+            // Chưa đăng nhập → về trang login
             router.replace('/login');
             return;
         }
 
         try {
-            const user = JSON.parse(storedUser);
-
-            // 2. Có vé nhưng sai chức vụ (Role không nằm trong danh sách cho phép) -> Báo lỗi 403
-            if (!allowedRoles.includes(user.role)) {
+            const user = JSON.parse(raw) as { role: string };
+            if (allowedRoles.includes(user.role)) {
+                setIsAuthorized(true);
+            } else {
+                // Đã đăng nhập nhưng không đủ quyền
                 router.replace('/forbidden');
-                return;
             }
-
-            // 3. Vé chuẩn, chức vụ chuẩn -> Mở cổng
-            setTimeout(() => setIsAuthorized(true), 0);
-
-        } catch (error) {
-            localStorage.clear();
+        } catch {
+            // User data bị corrupt
+            localStorage.removeItem('currentUser');
             router.replace('/login');
         }
     }, [router, allowedRoles]);
 
-    // Hiện vòng xoay trong lúc kiểm tra
     if (!isAuthorized) {
         return (
             <div className="h-screen w-full flex items-center justify-center bg-gray-50">

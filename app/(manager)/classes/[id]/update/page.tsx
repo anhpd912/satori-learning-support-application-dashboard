@@ -170,15 +170,12 @@ export default function EditClassPage() {
             />
 
             <PageHeader 
-                breadcrumb={
-                    <div className="flex items-center gap-2">
-                        <Link href="/classes" className="hover:text-gray-900 transition-colors">Quản lí lớp học</Link>
-                        <span className="mx-1">{'>'}</span> 
-                        <span className="text-gray-900 font-medium">Cập nhật thông tin</span>
-                    </div>
-                }
+                breadcrumb={[
+                    { label: 'Quản lí lớp học', href: '/classes' },
+                    { label: 'Chi tiết', href: `/classes/${classId}` },
+                    { label: 'Cập nhật thông tin', active: true }
+                ]}
                 backUrl={`/classes/${classId}`} 
-                backLabel="Quay lại"
                 title="Cập nhật thông tin lớp học"
                 description="Chỉnh sửa chi tiết thông tin lớp học"
             />

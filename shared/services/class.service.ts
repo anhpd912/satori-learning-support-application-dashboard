@@ -1,4 +1,4 @@
-import axios, { AxiosError } from 'axios';
+import api from '@/lib/axios';
 import {
     ClassBackendDTO,
     ClassModel,
@@ -11,8 +11,6 @@ import {
     ApiResponse
 } from '@/shared/types/class';
 
-const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v1') + '/classes';
-
 export const classService = {
     getClasses: async (
         page: number,
@@ -22,15 +20,13 @@ export const classService = {
         courseId: string,
         teacherId: string
     ) => {
-        const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : '';
-
         // 1. Map status ('Active'/'Inactive') sang boolean cho backend
         let isActive: boolean | undefined;
         if (status === 'Active') isActive = true;
         else if (status === 'Inactive') isActive = false;
 
         try {
-            const response = await axios.get<ApiResponse<PageResponse<ClassBackendDTO>>>(API_URL, {
+            const response = await api.get<ApiResponse<PageResponse<ClassBackendDTO>>>('/classes', {
                 params: {
                     page: page > 0 ? page - 1 : 0, // Backend dùng 0-based index
                     size: limit,
@@ -40,9 +36,6 @@ export const classService = {
                     // Cần đảm bảo dropdown filter cung cấp ID thay vì Name.
                     courseId: (courseId && courseId !== 'Tất cả') ? courseId : undefined,
                     teacherId: (teacherId && teacherId !== 'Tất cả') ? teacherId : undefined,
-                },
-                headers: {
-                    'Authorization': `Bearer ${token}`
                 }
             });
 
@@ -59,6 +52,7 @@ export const classService = {
                 course: item.courseName,
                 teacherName: item.teacherName,
                 studentCount: item.memberCount,
+                maxStudents: item.maxStudents ?? null,
                 status: item.isActive ? 'Active' : 'Inactive'
             }));
 
@@ -68,28 +62,21 @@ export const classService = {
                 totalPages: pageData.totalPages
             };
 
-        } catch (error) {
-             const err = error as AxiosError<ApiResponse<any>>;
-             throw new Error(err.response?.data?.message || err.message || 'Lỗi kết nối Server');
+        } catch (error: any) {
+             throw new Error(error.response?.data?.message || error.message || 'Lỗi kết nối Server');
         }
     },
 
     deleteClass: async (id: string) => {
-        const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : '';
         try {
-            const response = await axios.delete(`${API_URL}/${id}`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
+            const response = await api.delete(`/classes/${id}`);
             if (!response.data.success) throw new Error(response.data.message);
-        } catch (error) {
-            const err = error as AxiosError<ApiResponse<any>>;
-            throw new Error(err.response?.data?.message || err.message || 'Lỗi khi xóa lớp học');
+        } catch (error: any) {
+            throw new Error(error.response?.data?.message || error.message || 'Lỗi khi xóa lớp học');
         }
     },
 
     createClass: async (payload: CreateClassPayload) => {
-        const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : '';
-
         // Xử lý payload: Chuyển chuỗi rỗng/NaN thành undefined để không gửi lên backend (tránh lỗi 400 Bad Request với Date/Integer)
         const cleanPayload = {
             ...payload,
@@ -100,49 +87,34 @@ export const classService = {
         };
 
         try {
-            const response = await axios.post<ApiResponse<any>>(API_URL, cleanPayload, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
+            const response = await api.post<ApiResponse<any>>('/classes', cleanPayload);
             if (!response.data.success) throw new Error(response.data.message);
             return response.data.data;
-        } catch (error) {
-            const err = error as AxiosError<ApiResponse<any>>;
-            throw new Error(err.response?.data?.message || err.message || 'Lỗi khi tạo lớp học');
+        } catch (error: any) {
+            throw new Error(error.response?.data?.message || error.message || 'Lỗi khi tạo lớp học');
         }
     },
 
     getClassById: async (classId: string): Promise<ClassResponse> => {
-        const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : '';
-
         try {
-            const response = await axios.get<ApiResponse<ClassResponse>>(`${API_URL}/${classId}`, {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
+            const response = await api.get<ApiResponse<ClassResponse>>(`/classes/${classId}`);
 
             if (!response.data.success) {
                 throw new Error(response.data.message || 'Không thể tải thông tin chi tiết lớp học');
             }
 
             return response.data.data;
-        } catch (error) {
-            const err = error as AxiosError<ApiResponse<any>>;
-            throw new Error(err.response?.data?.message || err.message || 'Lỗi kết nối Server');
+        } catch (error: any) {
+            throw new Error(error.response?.data?.message || error.message || 'Lỗi kết nối Server');
         }
     },
 
     getClassMembers: async (classId: string, page: number, limit: number) => {
-        const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : '';
-
         try {
-            const response = await axios.get<ApiResponse<PageResponse<ClassMemberResponse>>>(`${API_URL}/${classId}/members`, {
+            const response = await api.get<ApiResponse<PageResponse<ClassMemberResponse>>>(`/classes/${classId}/members`, {
                 params: {
                     page: page > 0 ? page - 1 : 0,
                     size: limit
-                },
-                headers: {
-                    'Authorization': `Bearer ${token}`
                 }
             });
 
@@ -151,24 +123,18 @@ export const classService = {
             }
 
             return response.data.data;
-        } catch (error) {
-            const err = error as AxiosError<ApiResponse<any>>;
-            throw new Error(err.response?.data?.message || err.message || 'Lỗi kết nối Server');
+        } catch (error: any) {
+            throw new Error(error.response?.data?.message || error.message || 'Lỗi kết nối Server');
         }
     },
 
     getEligibleLearners: async (classId: string, page: number, limit: number, keyword: string) => {
-        const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : '';
-
         try {
-            const response = await axios.get<ApiResponse<PageResponse<UserResponse>>>(`${API_URL}/${classId}/eligible-learners`, {
+            const response = await api.get<ApiResponse<PageResponse<UserResponse>>>(`/classes/${classId}/eligible-learners`, {
                 params: {
                     page: page > 0 ? page - 1 : 0,
                     size: limit,
                     keyword: keyword || ''
-                },
-                headers: {
-                    'Authorization': `Bearer ${token}`
                 }
             });
 
@@ -177,55 +143,39 @@ export const classService = {
             }
 
             return response.data.data;
-        } catch (error) {
-            const err = error as AxiosError<ApiResponse<any>>;
-            throw new Error(err.response?.data?.message || err.message || 'Lỗi kết nối Server');
+        } catch (error: any) {
+            throw new Error(error.response?.data?.message || error.message || 'Lỗi kết nối Server');
         }
     },
 
     addMember: async (classId: string, userId: string) => {
-        const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : '';
-
         try {
-            const response = await axios.post<ApiResponse<ClassMemberResponse>>(`${API_URL}/${classId}/members`, { userId }, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
+            const response = await api.post<ApiResponse<ClassMemberResponse>>(`/classes/${classId}/members`, { userId });
             if (!response.data.success) throw new Error(response.data.message);
             return response.data;
-        } catch (error) {
-            const err = error as AxiosError<ApiResponse<any>>;
-            throw new Error(err.response?.data?.message || err.message || 'Lỗi khi thêm học viên vào lớp');
+        } catch (error: any) {
+            throw new Error(error.response?.data?.message || error.message || 'Lỗi khi thêm học viên vào lớp');
         }
     },
 
     removeMember: async (classId: string, userId: string) => {
-        const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : '';
-
         try {
-            const response = await axios.delete<ApiResponse<void>>(`${API_URL}/${classId}/members/${userId}`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
+            const response = await api.delete<ApiResponse<void>>(`/classes/${classId}/members/${userId}`);
             if (!response.data.success) throw new Error(response.data.message);
             return response.data;
-        } catch (error) {
-            const err = error as AxiosError<ApiResponse<any>>;
-            throw new Error(err.response?.data?.message || err.message || 'Lỗi khi xóa học viên khỏi lớp');
+        } catch (error: any) {
+            throw new Error(error.response?.data?.message || error.message || 'Lỗi khi xóa học viên khỏi lớp');
         }
     },
 
     updateClass: async (id: string, payload: UpdateClassPayload) => {
-        const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : '';
-
         try {
             // Backend trả về ApiResponse<ClassResponse>
-            const response = await axios.put<ApiResponse<ClassResponse>>(`${API_URL}/${id}`, payload, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
+            const response = await api.put<ApiResponse<ClassResponse>>(`/classes/${id}`, payload);
             if (!response.data.success) throw new Error(response.data.message);
             return response.data.data;
-        } catch (error) {
-            const err = error as AxiosError<ApiResponse<any>>;
-            throw new Error(err.response?.data?.message || err.message || 'Lỗi khi cập nhật lớp học');
+        } catch (error: any) {
+            throw new Error(error.response?.data?.message || error.message || 'Lỗi khi cập nhật lớp học');
         }
     }
 };

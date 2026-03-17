@@ -168,15 +168,11 @@ export default function EditCoursePage() {
             />
 
             <PageHeader 
-                breadcrumb={
-                    <>
-                        <Link href="/courses" className="hover:text-gray-900 transition-colors">Quản lí khóa học</Link>
-                        <span className="mx-1">{'>'}</span> 
-                        <Link href={`/courses/${courseId}`} className="hover:text-gray-900 transition-colors">Chi tiết</Link>
-                        <span className="mx-1">{'>'}</span> 
-                        <span className="text-gray-900 font-medium">Chỉnh sửa</span>
-                    </>
-                }
+                breadcrumb={[
+                    { label: 'Quản lí khóa học', href: '/courses' },
+                    { label: 'Chi tiết', href: `/courses/${courseId}` },
+                    { label: 'Chỉnh sửa', active: true }
+                ]}
                 backUrl={`/courses/${courseId}`} 
                 title="Chỉnh sửa khóa học"
                 description={`Cập nhật thông tin khóa học`}
