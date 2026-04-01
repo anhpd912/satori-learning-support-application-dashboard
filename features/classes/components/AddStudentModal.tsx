@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { classService } from '@/shared/services/class.service';
+import { classService } from '@/features/classes/services/class.service';
 
 interface User {
     id: string;

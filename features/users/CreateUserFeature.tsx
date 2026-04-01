@@ -10,13 +10,13 @@ import FormDate from '@/shared/components/FormDate';
 import PageHeader from '@/shared/components/PageHeader';
 import Toast, { ToastType } from '@/shared/components/Toast';
 import ConfirmModal from '@/shared/components/ConfirmModal';
-import { userService, CreateUserRequest } from '@/shared/services/user.service';
+import { userService, CreateUserRequest } from '@/features/users/services/user.service';
 
 interface CreateUserFeatureProps {
-  currentRole?: 'ADMIN' | 'MANAGER';
+  currentRole?: 'ADMIN' | 'CONTENT_MANAGER' | 'OPERATION_MANAGER';
 }
 
-export default function CreateUserFeature({ currentRole = 'MANAGER' }: CreateUserFeatureProps) {
+export default function CreateUserFeature({ currentRole = 'ADMIN' }: CreateUserFeatureProps) {
   const router = useRouter();
   
   const [isLoading, setIsLoading] = useState(false);
@@ -25,6 +25,7 @@ export default function CreateUserFeature({ currentRole = 'MANAGER' }: CreateUse
 
   const [restoreUserData, setRestoreUserData] = useState<any>(null);
   const [isRestoring, setIsRestoring] = useState(false);
+  const [showConfirmCancel, setShowConfirmCancel] = useState(false);
 
   const [toast, setToast] = useState<{ message: string; type: ToastType; isVisible: boolean }>({
     message: '', type: 'success', isVisible: false
@@ -47,7 +48,8 @@ export default function CreateUserFeature({ currentRole = 'MANAGER' }: CreateUse
 
       if (currentRole === 'ADMIN') {
           options.push(
-              { label: 'Quản lý (Manager)', value: 'MANAGER' },
+              { label: 'Quản lý nội dung (Content)', value: 'CONTENT_MANAGER' },
+              { label: 'Quản lý vận hành (Operation)', value: 'OPERATION_MANAGER' },
               { label: 'Quản trị viên (Admin)', value: 'ADMIN' }
           );
       }
@@ -55,6 +57,26 @@ export default function CreateUserFeature({ currentRole = 'MANAGER' }: CreateUse
   }, [currentRole]);
 
   const backUrl = currentRole === 'ADMIN' ? '/admin/users' : '/users';
+
+  const handleCancelClick = () => {
+    const hasChanges = formData.firstName !== '' || 
+                       formData.lastName !== '' || 
+                       formData.email !== '' || 
+                       (formData.phoneNumber !== undefined && formData.phoneNumber !== '') || 
+                       formData.role !== ('' as any) || 
+                       formData.dateOfBirth !== '';
+                       
+    if (hasChanges) {
+        setShowConfirmCancel(true);
+    } else {
+        router.push(backUrl);
+    }
+  };
+
+  const handleConfirmCancel = () => {
+      setShowConfirmCancel(false);
+      router.push(backUrl);
+  };
 
   const handleChange = (field: keyof CreateUserRequest, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -191,6 +213,17 @@ export default function CreateUserFeature({ currentRole = 'MANAGER' }: CreateUse
         cancelText="Hủy bỏ"
       />
 
+      <ConfirmModal 
+        isOpen={showConfirmCancel}
+        onClose={() => setShowConfirmCancel(false)}
+        onConfirm={handleConfirmCancel}
+        title="Xác nhận hủy"
+        message="Bạn có chắc chắn muốn hủy? Mọi thông tin bạn vừa nhập sẽ không được lưu."
+        confirmText="Đồng ý hủy"
+        cancelText="Đóng"
+        variant="danger"
+      />
+
       <PageHeader 
         breadcrumb={
           <>
@@ -271,11 +304,13 @@ export default function CreateUserFeature({ currentRole = 'MANAGER' }: CreateUse
             </div>
 
             <div className="flex justify-end gap-4 pt-4 border-t border-gray-100 mt-8">
-                <Link href={backUrl}>
-                    <button type="button" className="px-6 py-2.5 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-50 transition-colors">
-                        Hủy
-                    </button>
-                </Link>
+                <button 
+                    type="button" 
+                    onClick={handleCancelClick}
+                    className="px-6 py-2.5 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-50 transition-colors"
+                >
+                    Hủy
+                </button>
                 
                 <button 
                     type="submit" 

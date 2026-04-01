@@ -26,7 +26,7 @@ export default async function StudentGradingPage({
                     { label: 'Chi tiết bài tập', href: `/my-classes/${resolvedParams.id}/assignments/${resolvedParams.assignmentId}` },
                     { label: 'Chấm bài', active: true }
                 ]}
-                backUrl={`/my-classes/${resolvedParams.id}/assignments/${resolvedParams.assignmentId}/results/${resolvedParams.studentId}`}
+                backUrl={`/my-classes/${resolvedParams.id}/assignments/${resolvedParams.assignmentId}`}
                 title="Chấm bài học viên"
             />
 

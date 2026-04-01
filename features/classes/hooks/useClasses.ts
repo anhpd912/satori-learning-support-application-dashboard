@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { classService } from '@/shared/services/class.service';
+import { classService } from '@/features/classes/services/class.service';
 import { CreateClassPayload, UpdateClassPayload } from '@/shared/types/class';
 
 // Keys for query invalidation

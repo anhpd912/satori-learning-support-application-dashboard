@@ -40,6 +40,7 @@ export default function StudentGradingClient({
         
         gradeWriting({
             submissionId: studentId,
+            assignmentId: assignmentId,
             request: {
                 teacherScore: score,
                 feedback: feedback

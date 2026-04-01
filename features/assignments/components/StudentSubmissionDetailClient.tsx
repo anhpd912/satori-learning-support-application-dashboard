@@ -1,9 +1,9 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useSubmissionDetail, useAssignmentDetail } from '../hooks/useAssignments';
-import { SubmissionDetail, AssignmentDetail, QuizQuestion } from '../types/assignment';
+import { SubmissionDetail, QuizQuestion } from '../types/assignment';
 import SafeMarkdown from '@/shared/components/SafeMarkdown';
+import { useSubmissionDetail, useAssignmentDetail } from '../hooks/useAssignments';
 import Link from 'next/link';
 
 export default function StudentSubmissionDetailClient({ 
@@ -60,17 +60,23 @@ export default function StudentSubmissionDetailClient({
                         <div className="flex items-center gap-3 mb-1">
                             <h2 className="text-xl font-bold text-gray-900">{submission.userFullName}</h2>
                         </div>
-                        <div className="flex items-center gap-2">
-                            <div className="flex items-center gap-1.5 text-sm font-medium text-gray-500">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                                Nộp lúc: {submission.submittedAt ? new Date(submission.submittedAt).toLocaleString('vi-VN') : '---'}
+                            <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-1.5 text-sm font-medium text-gray-500">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                                    Nộp lúc: {submission.submittedAt && new Date(submission.submittedAt).getTime() > 0 ? new Date(submission.submittedAt).toLocaleString('vi-VN') : '---'}
+                                </div>
+                                <span className={`px-2.5 py-0.5 text-[11px] font-bold rounded-full whitespace-nowrap ${
+                                    submission.status === 'GRADED' ? 'bg-green-100 text-green-700' : 
+                                    submission.status === 'SUBMITTED' ? 'bg-blue-100 text-blue-700' :
+                                    submission.status === 'IN_PROGRESS' ? 'bg-yellow-100 text-yellow-700' :
+                                    'bg-gray-100 text-gray-600'
+                                }`}>
+                                    {submission.status === 'GRADED' ? 'Đã chấm' : 
+                                     submission.status === 'SUBMITTED' ? 'Đã nộp' : 
+                                     submission.status === 'IN_PROGRESS' ? 'Đang làm' :
+                                     submission.status}
+                                </span>
                             </div>
-                            <span className={`px-2.5 py-0.5 text-[11px] font-bold rounded-full whitespace-nowrap ${
-                                submission.status === 'GRADED' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'
-                            }`}>
-                                {submission.status === 'GRADED' ? 'Đã chấm' : 'Đã nộp'}
-                            </span>
-                        </div>
                     </div>
                 </div>
 
@@ -120,7 +126,10 @@ export default function StudentSubmissionDetailClient({
                     <div className="flex flex-col gap-6">
                         {assignment.questions?.map((q: QuizQuestion, idx: number) => {
                             const studentSelection = studentAnswers[q.id || ''];
-                            const isCorrect = studentSelection === q.correctAnswer;
+                            // Check if studentSelection matches q.correctAnswer (either text or letter ID)
+                            const isCorrect = studentSelection === q.correctAnswer || 
+                                              (typeof q.correctAnswer === 'string' && q.correctAnswer.length === 1 && 
+                                               studentSelection === q.options[q.correctAnswer.charCodeAt(0) - 65]);
                             const borderColor = isCorrect ? 'border-[#008F52]' : 'border-[#F04438]';
                             
                             // Transform options from JSON string if needed
@@ -155,8 +164,8 @@ export default function StudentSubmissionDetailClient({
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         {options.map((optText, i) => {
                                             const optLabel = String.fromCharCode(65 + i);
-                                            const isSelected = studentSelection === optText;
-                                            const isOptionCorrect = q.correctAnswer === optText;
+                                            const isSelected = studentSelection === optText || studentSelection === optLabel;
+                                            const isOptionCorrect = q.correctAnswer === optText || q.correctAnswer === optLabel;
 
                                             // Determine styling
                                             let optionClasses = 'border-gray-100 bg-[#FAFAFA] text-gray-700';
@@ -186,12 +195,18 @@ export default function StudentSubmissionDetailClient({
                                                         <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 text-[10px] font-bold border uppercase tracking-wider ${labelBg} ${labelClasses}`}>
                                                             {optLabel}
                                                         </div>
-                                                        <span className="text-[15px] font-medium">{optText}</span>
+                                                        <SafeMarkdown content={optText} className="text-[15px] font-medium" />
                                                     </div>
                                                 </div>
                                             )
                                         })}
                                     </div>
+                                    {q.explanation && (
+                                        <div className="mt-6 text-sm text-gray-600 bg-gray-50 p-4 rounded-xl border-l-4 border-l-blue-500 border border-gray-100 italic">
+                                            <span className="font-bold text-blue-600 not-italic mr-2">Giải thích:</span>
+                                            <SafeMarkdown content={q.explanation || ''} className="inline-block" />
+                                        </div>
+                                    )}
                                 </div>
                             )
                         })}

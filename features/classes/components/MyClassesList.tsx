@@ -9,8 +9,8 @@ import Pagination from '@/shared/components/Pagination';
 import PageHeader from '@/shared/components/PageHeader';
 import Toast, { ToastType } from '@/shared/components/Toast';
 import ClassFilters from '@/features/classes/components/ClassFilters';
-import { classService, ClassModel } from '@/shared/services/class.service';
-import { courseService } from '@/app/(manager)/courses/services/course.service';
+import { classService, ClassModel } from '@/features/classes/services/class.service';
+import { courseService } from '@/features/courses/services/course.service';
 import { FilterOption } from '@/shared/components/FilterDropdown';
 
 const ITEMS_PER_PAGE = 5;

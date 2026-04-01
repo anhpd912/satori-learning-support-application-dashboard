@@ -3,7 +3,7 @@ import React, { useEffect } from 'react';
 export type ToastType = 'success' | 'error' | 'info';
 
 interface ToastProps {
-  message: string;
+  message: React.ReactNode;
   type?: ToastType;
   isVisible: boolean;
   onClose: () => void;

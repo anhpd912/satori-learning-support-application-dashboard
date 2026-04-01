@@ -35,13 +35,21 @@ export default function ChangePasswordForm() {
             isValid = false;
         }
 
-        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>]).{8,}$/;
-        if (!passwordRegex.test(newPassword)) {
-            newErrors.newPassword = 'Mật khẩu phải có ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt';
+        if (!newPassword) {
+            newErrors.newPassword = 'Vui lòng nhập mật khẩu mới';
             isValid = false;
+        } else {
+            const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>]).{8,}$/;
+            if (!passwordRegex.test(newPassword)) {
+                newErrors.newPassword = 'Mật khẩu phải có ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt';
+                isValid = false;
+            }
         }
 
-        if (newPassword !== confirmPassword) {
+        if (!confirmPassword) {
+            newErrors.confirmPassword = 'Vui lòng xác nhận mật khẩu mới';
+            isValid = false;
+        } else if (newPassword !== confirmPassword) {
             newErrors.confirmPassword = 'Mật khẩu xác nhận không trùng khớp';
             isValid = false;
         }

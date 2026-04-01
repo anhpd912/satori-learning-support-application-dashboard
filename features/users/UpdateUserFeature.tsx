@@ -9,15 +9,15 @@ import FormInput from '@/shared/components/FormInput';
 import FormSelect from '@/shared/components/FormSelect';
 import FormDate from '@/shared/components/FormDate';
 import Toast, { ToastType } from '@/shared/components/Toast';
-import { userService, UpdateUserRequest } from '@/shared/services/user.service';
+import { userService, UpdateUserRequest } from '@/features/users/services/user.service';
 import ConfirmModal from '@/shared/components/ConfirmModal';
 
 interface UpdateUserFeatureProps {
   userId: string;
-  currentRole?: 'ADMIN' | 'MANAGER';
+  currentRole?: 'ADMIN' | 'CONTENT_MANAGER' | 'OPERATION_MANAGER';
 }
 
-export default function UpdateUserFeature({ userId, currentRole = 'MANAGER' }: UpdateUserFeatureProps) {
+export default function UpdateUserFeature({ userId, currentRole = 'ADMIN' }: UpdateUserFeatureProps) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -53,7 +53,8 @@ export default function UpdateUserFeature({ userId, currentRole = 'MANAGER' }: U
     ];
     if (currentRole === 'ADMIN') {
       options.push(
-        { label: 'Quản lý (Manager)', value: 'MANAGER' },
+        { label: 'Quản lý nội dung (Content)', value: 'CONTENT_MANAGER' },
+        { label: 'Quản lý vận hành (Operation)', value: 'OPERATION_MANAGER' },
         { label: 'Quản trị viên (Admin)', value: 'ADMIN' }
       );
     }
