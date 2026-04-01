@@ -22,13 +22,21 @@ export default function Pagination({
   // Hàm tạo danh sách số trang
   const renderPageNumbers = () => {
     const pages = [];
-    for (let i = 1; i <= totalPages; i++) {
+    const maxVisiblePages = 3;
+    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+    if (endPage - startPage + 1 < maxVisiblePages) {
+      startPage = Math.max(1, endPage - maxVisiblePages + 1);
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
       pages.push(
         <button
           key={i}
           onClick={() => onPageChange(i)}
           className={`w-8 h-8 flex items-center justify-center rounded-lg text-sm font-medium transition-colors ${currentPage === i
-            ? 'bg-[#253A8C] text-white' // Style Active (Xanh đậm)
+            ? 'bg-[#253A8C] text-white'
             : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
             }`}
         >

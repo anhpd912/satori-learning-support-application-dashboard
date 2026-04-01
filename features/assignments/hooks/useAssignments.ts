@@ -144,10 +144,15 @@ export const useSubmissionDetail = (submissionId: string) => {
 export const useGradeWriting = () => {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: ({ submissionId, request }: { submissionId: string; request: GradeWritingRequest }) =>
+        mutationFn: ({ submissionId, request, assignmentId }: { submissionId: string; request: GradeWritingRequest; assignmentId?: string }) =>
             assignmentService.gradeWritingSubmission(submissionId, request),
         onSuccess: (_, variables) => {
             queryClient.invalidateQueries({ queryKey: assignmentKeys.submissionDetail(variables.submissionId) });
+            if (variables.assignmentId) {
+                queryClient.invalidateQueries({ queryKey: [...assignmentKeys.all, 'submissions', variables.assignmentId] });
+            } else {
+                queryClient.invalidateQueries({ queryKey: [...assignmentKeys.all, 'submissions'] });
+            }
         },
     });
 };

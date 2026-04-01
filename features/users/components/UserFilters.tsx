@@ -11,7 +11,7 @@ interface UserFiltersProps {
   statusFilter: string;
   setStatusFilter: (value: string) => void;
   error?: string;
-  currentRole?: 'ADMIN' | 'MANAGER';
+  currentRole?: 'ADMIN' | 'CONTENT_MANAGER' | 'OPERATION_MANAGER';
 }
 
 export default function UserFilters({
@@ -19,14 +19,14 @@ export default function UserFilters({
   roleFilter, setRoleFilter,
   statusFilter, setStatusFilter,
   error,
-  currentRole = 'MANAGER'
+  currentRole = 'ADMIN'
 }: UserFiltersProps) {
 
   const roleOptions = useMemo(() => {
     const options = ['Tất cả', 'LEARNER', 'TEACHER'];
 
     if (currentRole === 'ADMIN') {
-        options.push('MANAGER', 'ADMIN');
+        options.push('CONTENT_MANAGER', 'OPERATION_MANAGER', 'ADMIN');
     }
 
     return options;

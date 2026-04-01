@@ -22,7 +22,14 @@ export default function AuthGuard({ children, allowedRoles }: AuthGuardProps) {
         }
 
         try {
+            // Guard against literal "undefined" or "null" strings written by buggy refresh flow
+            if (raw === 'undefined' || raw === 'null') {
+                throw new Error('corrupt');
+            }
             const user = JSON.parse(raw) as { role: string };
+            if (!user || !user.role) {
+                throw new Error('corrupt');
+            }
             if (allowedRoles.includes(user.role)) {
                 setIsAuthorized(true);
             } else {

@@ -7,7 +7,7 @@ import { User } from '@/shared/types/user';
 import UserHeader from './components/UserHeader';
 import UserFilters from './components/UserFilters';
 import Pagination from '@/shared/components/Pagination';
-import { userService } from '@/shared/services/user.service';
+import { userService } from '@/features/users/services/user.service';
 import CommonTable, { Column } from '@/shared/components/CommonTable';
 import ConfirmModal from '@/shared/components/ConfirmModal';
 import Toast, { ToastType } from '@/shared/components/Toast';
@@ -15,10 +15,10 @@ import Toast, { ToastType } from '@/shared/components/Toast';
 const ITEMS_PER_PAGE = 10;
 
 interface UserListFeatureProps {
-  role?: 'ADMIN' | 'MANAGER';
+  role?: 'ADMIN' | 'CONTENT_MANAGER' | 'OPERATION_MANAGER';
 }
 
-export default function UserManagementPage({ role = 'MANAGER' }: UserListFeatureProps) {
+export default function UserManagementPage({ role = 'ADMIN' }: UserListFeatureProps) {
   const router = useRouter();
 
   const [searchTerm, setSearchTerm] = useState('');

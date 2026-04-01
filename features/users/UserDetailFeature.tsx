@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import PageHeader from '@/shared/components/PageHeader';
 import InfoItem from '@/shared/components/InfoItem';
-import { userService } from '@/shared/services/user.service';
+import { userService } from '@/features/users/services/user.service';
 import { User } from '@/shared/types/user';
 import ConfirmModal from '@/shared/components/ConfirmModal';
 import Toast, { ToastType } from '@/shared/components/Toast';
@@ -21,7 +21,8 @@ const getRoleLabel = (role: string) => {
     const map: Record<string, string> = {
         'LEARNER': 'Học viên',
         'TEACHER': 'Giáo viên',
-        'MANAGER': 'Quản lý',
+        'CONTENT_MANAGER': 'Quản lý nội dung',
+        'OPERATION_MANAGER': 'Quản lý vận hành',
         'ADMIN': 'Quản trị viên'
     };
     return map[role] || role;
@@ -29,10 +30,10 @@ const getRoleLabel = (role: string) => {
 
 interface UserDetailFeatureProps {
     userId: string;
-    role?: 'ADMIN' | 'MANAGER';
+    role?: 'ADMIN' | 'CONTENT_MANAGER' | 'OPERATION_MANAGER';
 }
 
-export default function UserDetailFeature({ userId, role = 'MANAGER' }: UserDetailFeatureProps) {
+export default function UserDetailFeature({ userId, role = 'ADMIN' }: UserDetailFeatureProps) {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);

@@ -246,7 +246,7 @@ export default function CreateAssignmentClient({ classId, assignmentId }: { clas
                 options: q.options,
                 correctAnswerIndex: q.correctAnswerIndex,
                 questionType: 'multiple_choice', // Backend requires this
-                correctAnswer: q.correctAnswerIndex !== undefined ? q.options[q.correctAnswerIndex] : '' // Text of the correct option
+                correctAnswer: q.correctAnswerIndex !== undefined ? String.fromCharCode(65 + q.correctAnswerIndex) : '' 
             });
             updateQuestion(index, 'explanation', res.explanation);
             setToast({ message: 'Đã tạo giải thích thành công', type: 'success' });

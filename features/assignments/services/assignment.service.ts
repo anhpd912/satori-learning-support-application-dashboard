@@ -73,7 +73,7 @@ class AssignmentService {
                 ...q,
                 questionType: q.questionType || 'multiple_choice',
                 options: Array.isArray(q.options) ? JSON.stringify(q.options) : q.options,
-                correctAnswer: (Array.isArray(q.options) && q.correctAnswerIndex !== undefined) ? (q.options as string[])[q.correctAnswerIndex] : '',
+                correctAnswer: (Array.isArray(q.options) && q.correctAnswerIndex !== undefined) ? String.fromCharCode(65 + q.correctAnswerIndex) : '',
                 points: q.points || 10,
                 orderIndex: idx
             }))
@@ -159,10 +159,10 @@ class AssignmentService {
     // SUBMISSIONS
 
     async getSubmissions(assignmentId: string, page: number = 1, size: number = 10) {
-        const response = await api.get<PageResponse<SubmissionSummary>>(`${this.API_URL}/${assignmentId}/submissions`, {
+        const response = await api.get<ApiResponse<PageResponse<SubmissionSummary>>>(`${this.API_URL}/${assignmentId}/submissions`, {
             params: { page, size }
         });
-        return response.data;
+        return response.data.data;
     }
 
     async getSubmissionDetail(submissionId: string) {

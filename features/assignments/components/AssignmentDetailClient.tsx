@@ -37,7 +37,7 @@ export default function AssignmentDetailClient({ classId, assignmentId }: { clas
     const [page, setPage] = useState(1);
     const { data: submissionPage, isLoading: isLoadingSubmissions } = useAssignmentSubmissions(assignmentId, page, 10);
     
-    const [activeTab, setActiveTab] = useState<'RESULTS' | 'CONTENT'>('CONTENT');
+    const [activeTab, setActiveTab] = useState<'RESULTS' | 'CONTENT'>('RESULTS');
     const [toast, setToast] = useState<{ message: string; type: ToastType } | null>(null);
 
     // Audio states
@@ -261,7 +261,7 @@ export default function AssignmentDetailClient({ classId, assignmentId }: { clas
 
                                     return options.map((opt, oIdx) => {
                                         const optText = typeof opt === 'string' ? opt : (opt?.text || '');
-                                        const isCorrect = q.correctAnswer ? (optText === q.correctAnswer) : (oIdx === (q as any).correctAnswerIndex);
+                                        const isCorrect = q.correctAnswer ? (optText === q.correctAnswer || String.fromCharCode(65 + oIdx) === q.correctAnswer) : (oIdx === (q as any).correctAnswerIndex);
 
                                         return (
                                             <div
@@ -281,9 +281,10 @@ export default function AssignmentDetailClient({ classId, assignmentId }: { clas
                                                     <span className={`text-base font-bold ${isCorrect ? 'text-green-700' : 'text-gray-500'}`}>
                                                         {String.fromCharCode(65 + oIdx)}.
                                                     </span>
-                                                    <span className={`text-base font-medium ${isCorrect ? 'text-green-800' : 'text-gray-700'}`}>
-                                                        {optText}
-                                                    </span>
+                                                    <SafeMarkdown 
+                                                        content={optText} 
+                                                        className={`text-base font-medium ${isCorrect ? 'text-green-800' : 'text-gray-700'}`} 
+                                                    />
                                                 </div>
 
                                                 {isCorrect && (
@@ -304,7 +305,7 @@ export default function AssignmentDetailClient({ classId, assignmentId }: { clas
                                     </div>
                                     <div>
                                         <span className="block text-xs font-black text-blue-800 uppercase tracking-widest mb-1">Giải thích</span>
-                                        <p className="text-[15px] text-blue-700 leading-relaxed font-medium">{q.explanation}</p>
+                                        <SafeMarkdown content={q.explanation || ''} className="text-[15px] text-blue-700 leading-relaxed font-medium" />
                                     </div>
                                 </div>
                             )}
@@ -388,15 +389,21 @@ export default function AssignmentDetailClient({ classId, assignmentId }: { clas
                                                 </div>
                                             </td>
                                             <td className="px-6 py-5 text-sm text-gray-600 font-medium">
-                                                {new Date(sub.submittedAt).toLocaleString('vi-VN')}
+                                                {sub.submittedAt && new Date(sub.submittedAt).getTime() > 0 
+                                                    ? new Date(sub.submittedAt).toLocaleString('vi-VN') 
+                                                    : '---'}
                                             </td>
                                             <td className="px-6 py-5 text-center">
                                                 <span className={`px-3 py-1 rounded-full text-[11px] font-black uppercase tracking-wider ${
                                                     sub.status === 'GRADED' ? 'bg-green-100 text-green-700' : 
                                                     sub.status === 'SUBMITTED' ? 'bg-blue-100 text-blue-700' :
+                                                    sub.status === 'IN_PROGRESS' ? 'bg-yellow-100 text-yellow-700' :
                                                     'bg-gray-100 text-gray-600'
                                                 }`}>
-                                                    {sub.status === 'GRADED' ? 'Đã chấm' : sub.status === 'SUBMITTED' ? 'Đã nộp' : sub.status}
+                                                    {sub.status === 'GRADED' ? 'Đã chấm' : 
+                                                     sub.status === 'SUBMITTED' ? 'Đã nộp' : 
+                                                     sub.status === 'IN_PROGRESS' ? 'Đang làm' :
+                                                     sub.status}
                                                 </span>
                                             </td>
                                             <td className="px-6 py-5 text-center font-black text-gray-900">

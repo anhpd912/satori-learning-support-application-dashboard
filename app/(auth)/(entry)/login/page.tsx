@@ -75,9 +75,7 @@ export default function LoginPage() {
         const data = await authService.login(formData.email, formData.password);
         
         localStorage.setItem('accessToken', data.accessToken);
-        if (data.refreshToken) {
-            localStorage.setItem('refreshToken', data.refreshToken);
-        }
+        localStorage.setItem('refreshToken', data.refreshToken);
         localStorage.setItem('currentUser', JSON.stringify(data.user));
 
         const role = data.user.role;
@@ -87,8 +85,12 @@ export default function LoginPage() {
                 router.push('/admin/users'); 
                 break;
 
-            case 'MANAGER':
-                router.push('/users'); 
+            case 'CONTENT_MANAGER':
+                router.push('/content-manager-homepage'); 
+                break;
+                
+            case 'OPERATION_MANAGER':
+                router.push('/operation-manager-homepage'); 
                 break;
 
             case 'TEACHER':

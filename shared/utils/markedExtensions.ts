@@ -56,16 +56,19 @@ export const markedExtensions: MarkedExtension = {
                 const rule = /^\+\+([^\+]+)\+\+/;
                 const match = rule.exec(src);
                 if (match) {
-                    return {
+                    const token = {
                         type: 'custom-underline',
                         raw: match[0],
                         text: match[1],
+                        tokens: [] as any[]
                     };
+                    this.lexer.inline(token.text, token.tokens);
+                    return token;
                 }
                 return;
             },
             renderer(token: any) {
-                return `<u>${token.text}</u>`;
+                return `<u>${this.parser.parseInline(token.tokens)}</u>`;
             }
         }
     ]

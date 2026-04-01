@@ -13,6 +13,7 @@ interface CommonTableProps<T> {
   keyExtractor: (item: T) => string | number;
   isLoading?: boolean;
   onRowClick?: (item: T) => void;
+  className?: string;
 }
 
 export default function CommonTable<T,>({ 
@@ -20,7 +21,8 @@ export default function CommonTable<T,>({
     columns, 
     keyExtractor, 
     isLoading,
-    onRowClick
+    onRowClick,
+    className = ''
 }: CommonTableProps<T>) {
   
   if (isLoading) {
@@ -32,9 +34,9 @@ export default function CommonTable<T,>({
   }
 
   return (
-    <div className="bg-white border border-gray-200 border-b-0 shadow-sm rounded-t-xl overflow-hidden">
+    <div className={`overflow-x-auto ${className}`}>
       <table className="w-full text-left border-collapse">
-        <thead className="bg-gray-50 text-gray-500 text-xs uppercase font-semibold">
+        <thead className="bg-gray-50/50 text-gray-400 text-[10px] uppercase font-bold tracking-wider border-b border-gray-50">
           <tr>
             {columns.map((col, index) => (
               <th key={index} className={`px-6 py-4 ${col.className || ''}`}>

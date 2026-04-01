@@ -33,7 +33,7 @@ export default function Sidebar({ menuItems }: SidebarProps) {
                 setTimeout(() => {
                     setCurrentUser({
                         fullName: parsedUser.fullName || 'Người dùng',
-                        role: parsedUser.role || 'Manager',
+                        role: parsedUser.role || 'Guest',
                         avatar: parsedUser.avatar || '' 
                     });
                 }, 0);

@@ -8,7 +8,7 @@ import PageHeader from '@/shared/components/PageHeader';
 import Toast, { ToastType } from '@/shared/components/Toast';
 import InfoItem from '@/shared/components/InfoItem';
 import Pagination from '@/shared/components/Pagination';
-import { classService, ClassResponse, ClassMemberResponse } from '@/shared/services/class.service';
+import { classService, ClassResponse, ClassMemberResponse } from '@/features/classes/services/class.service';
 
 const ITEMS_PER_PAGE = 5;
 

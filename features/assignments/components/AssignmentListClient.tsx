@@ -8,7 +8,7 @@ import AssignmentFilters from './AssignmentFilters';
 import CommonTable, { Column } from '@/shared/components/CommonTable';
 import Pagination from '@/shared/components/Pagination';
 import { useClassAssignments, useDeleteAssignment } from '../hooks/useAssignments';
-import { classService } from '@/shared/services/class.service';
+import { classService } from '@/features/classes/services/class.service';
 import { useQuery } from '@tanstack/react-query';
 import Toast, { ToastType } from '@/shared/components/Toast';
 import { assignmentService } from '../services/assignment.service';

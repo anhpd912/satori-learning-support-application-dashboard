@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { courseService } from '@/app/(manager)/courses/services/course.service';
+import { courseService } from '@/features/courses/services/course.service';
 
 export const courseKeys = {
     all: ['courses'] as const,
