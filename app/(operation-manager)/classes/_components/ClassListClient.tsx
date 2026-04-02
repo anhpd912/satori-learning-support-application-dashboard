@@ -12,7 +12,7 @@ import { ClassModel } from '@/shared/types/class';
 
 import { useClasses, useDeleteClass } from '@/features/classes/hooks/useClasses';
 import { useUsers } from '@/features/users/hooks/useUsers';
-import { useCourses } from '@/features/courses/hooks/useCourses';
+import { usePublicCourses } from '@/features/courses/hooks/useCourses';
 
 const ITEMS_PER_PAGE = 5;
 
@@ -36,10 +36,10 @@ export default function ClassListClient() {
 
     // 1. Fetch Danh sách khóa học & giảng viên (Cho bộ lọc)
     const { data: teachersRes } = useUsers(1, 100, '', 'TEACHER', 'ACTIVE');
-    const { data: coursesRes } = useCourses(1, 100, '', 'ALL', 'OPEN');
+    const { data: publicCoursesData } = usePublicCourses();
     
     const teacherOptions = teachersRes?.data.map(t => ({ label: t.name, value: t.id })) || [];
-    const courseOptions = coursesRes?.data.map(c => ({ label: c.name, value: c.id })) || [];
+    const courseOptions = publicCoursesData?.map(c => ({ label: c.name, value: c.id })) || [];
 
     // 2. Fetch danh sách lớp học (Table Data)
     const { data: classRes, isPending: isLoading, isError } = useClasses(

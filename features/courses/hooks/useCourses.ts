@@ -20,3 +20,10 @@ export const useCourses = (
         placeholderData: (previousData) => previousData,
     });
 };
+
+export const usePublicCourses = () => {
+    return useQuery({
+        queryKey: [...courseKeys.all, 'public'] as const,
+        queryFn: () => courseService.getPublicCourses(),
+    });
+};

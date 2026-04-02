@@ -35,7 +35,6 @@ export default function EditClassPage() {
         courseId: '',
         maxStudents: '',
         startDate: '',
-        endDate: '',
         description: '',
     });
 
@@ -46,12 +45,12 @@ export default function EditClassPage() {
     useEffect(() => {
         const fetchOptions = async () => {
             try {
-                const [teachersRes, coursesRes] = await Promise.all([
+                const [teachersRes, coursesData] = await Promise.all([
                     userService.getUsers(1, 100, '', 'TEACHER', 'ACTIVE'),
-                    courseService.getCourses(1, 100, '', 'ALL', 'ACTIVE')
+                    courseService.getPublicCourses()
                 ]);
                 setTeacherOptions(teachersRes.data.map(t => ({ label: t.name, value: t.id })));
-                setCourseOptions(coursesRes.data.map(c => ({ label: c.name, value: c.id })));
+                setCourseOptions(coursesData.map(c => ({ label: c.name, value: c.id })));
             } catch (error) {
                 console.error('Failed to fetch options', error);
             }
@@ -73,7 +72,6 @@ export default function EditClassPage() {
                     courseId: data.courseId,
                     maxStudents: data.maxStudents.toString(),
                     startDate: data.startDate ? data.startDate.split('T')[0] : '',
-                    endDate: data.endDate ? data.endDate.split('T')[0] : '',
                     description: data.description || '',
                 });
             } catch (error: any) {
@@ -97,7 +95,16 @@ export default function EditClassPage() {
         const newErrors: Record<string, string> = {};
         let isValid = true;
 
-        if (!formData.name.trim()) { newErrors.name = 'Vui lòng nhập tên lớp học'; isValid = false; }
+        if (!formData.name.trim()) {
+            newErrors.name = 'Vui lòng nhập tên lớp học';
+            isValid = false;
+        } else if (formData.name.trim().length < 3) {
+            newErrors.name = 'Tên lớp học phải có ít nhất 3 ký tự';
+            isValid = false;
+        } else if (formData.name.trim().length > 255) {
+            newErrors.name = 'Tên lớp học không được vượt quá 255 ký tự';
+            isValid = false;
+        }
         if (!formData.teacherId) { newErrors.teacherId = 'Vui lòng chọn giảng viên'; isValid = false; }
         if (!formData.courseId) { newErrors.courseId = 'Vui lòng chọn khóa học'; isValid = false; }
         
@@ -105,15 +112,6 @@ export default function EditClassPage() {
             const max = parseInt(formData.maxStudents, 10);
             if (isNaN(max) || max <= 0) {
                 newErrors.maxStudents = 'Sĩ số phải là số lớn hơn 0';
-                isValid = false;
-            }
-        }
-
-        if (formData.startDate && formData.endDate) {
-            const start = new Date(formData.startDate);
-            const end = new Date(formData.endDate);
-            if (start > end) {
-                newErrors.endDate = 'Ngày kết thúc phải sau ngày bắt đầu';
                 isValid = false;
             }
         }
@@ -136,7 +134,6 @@ export default function EditClassPage() {
                 teacherId: formData.teacherId,
                 maxStudents: parseInt(formData.maxStudents),
                 startDate: formData.startDate,
-                endDate: formData.endDate,
                 description: formData.description
             });
             
@@ -177,6 +174,7 @@ export default function EditClassPage() {
                 ]}
                 backUrl={`/classes/${classId}`} 
                 title="Cập nhật thông tin lớp học"
+                titleAlign="right"
                 description="Chỉnh sửa chi tiết thông tin lớp học"
             />
 
@@ -227,8 +225,8 @@ export default function EditClassPage() {
                         />
                     </div>
 
-                    {/* Hàng 3: Sĩ số, Ngày bắt đầu, Ngày kết thúc (3 cột) */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    {/* Hàng 3: Sĩ số, Ngày bắt đầu (2 cột) */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <FormInput 
                             label="Sĩ số tối đa" 
                             type="number"
@@ -243,13 +241,6 @@ export default function EditClassPage() {
                             value={formData.startDate}
                             onChange={(e) => handleChange('startDate', e.target.value)}
                             error={errors.startDate}
-                        />
-
-                        <FormDate 
-                            label="Ngày kết thúc" 
-                            value={formData.endDate}
-                            onChange={(e) => handleChange('endDate', e.target.value)}
-                            error={errors.endDate}
                         />
                     </div>
 

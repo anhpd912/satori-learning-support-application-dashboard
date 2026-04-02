@@ -1,17 +1,18 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import PageHeader from '@/shared/components/PageHeader';
 import CommonTable, { Column } from '@/shared/components/CommonTable';
 import Pagination from '@/shared/components/Pagination';
 import FilterDropdown from '@/shared/components/FilterDropdown';
-import Toast from '@/shared/components/Toast'; // Added import
+import Toast from '@/shared/components/Toast';
 
 import Link from 'next/link';
-import { useEffect } from 'react';
 import { topicService } from '../services/topic-service';
 import { TopicSummary } from '../types';
+
+const ITEMS_PER_PAGE = 10;
 
 export default function TopicsListClient() {
     const router = useRouter();
@@ -21,16 +22,15 @@ export default function TopicsListClient() {
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [totalItems, setTotalItems] = useState(0);
-    const itemsPerPage = 10;
     const [statusFilter, setStatusFilter] = useState('Tất cả Trạng thái');
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [editingTheme, setEditingTheme] = useState<TopicSummary | null>(null);
     const [keyword, setKeyword] = useState('');
 
     const [themeTitle, setThemeTitle] = useState('');
-    const [themeTitleJapanese, setThemeTitleJapanese] = useState('');
     const [themeDescription, setThemeDescription] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [errors, setErrors] = useState<Record<string, string>>({});
 
     // Toast state
     const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info'; isVisible: boolean }>({
@@ -46,7 +46,7 @@ export default function TopicsListClient() {
     const fetchTopics = async () => {
         setIsLoading(true);
         try {
-            const data = await topicService.getThemes(currentPage - 1, itemsPerPage, keyword);
+            const data = await topicService.getThemes(currentPage - 1, ITEMS_PER_PAGE, keyword);
             if (data.success) {
                 setTopics(data.data.content);
                 setTotalPages(data.data.totalPages);
@@ -67,27 +67,40 @@ export default function TopicsListClient() {
     const handleOpenAddModal = () => {
         setEditingTheme(null);
         setThemeTitle('');
-        setThemeTitleJapanese('');
         setThemeDescription('');
+        setErrors({});
         setIsAddModalOpen(true);
     };
 
     const handleOpenEditModal = (theme: TopicSummary) => {
         setEditingTheme(theme);
         setThemeTitle(theme.title);
-        setThemeTitleJapanese(theme.titleJapanese || '');
         setThemeDescription(theme.descriptionVi || theme.description || '');
+        setErrors({});
         setIsAddModalOpen(true);
     };
 
+    const validateForm = () => {
+        const newErrors: Record<string, string> = {};
+        if (!themeTitle.trim()) {
+            newErrors.title = 'Tên chủ đề không được để trống';
+        } else if (themeTitle.length > 255) {
+            newErrors.title = 'Tên chủ đề không được vượt quá 255 ký tự';
+        }
+        if (themeDescription.length > 1000) {
+            newErrors.description = 'Mô tả không được vượt quá 1000 ký tự';
+        }
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
+
     const handleSubmitTheme = async () => {
-        if (!themeTitle.trim()) return;
+        if (!validateForm()) return;
 
         setIsSubmitting(true);
         try {
             const payload = {
                 title: themeTitle,
-                titleJapanese: themeTitleJapanese,
                 descriptionVi: themeDescription,
                 status: editingTheme?.status || 'DRAFT',
                 orderIndex: editingTheme?.orderIndex || (totalItems + 1)
@@ -104,6 +117,7 @@ export default function TopicsListClient() {
             }
         } catch (error) {
             console.error('Failed to save theme:', error);
+            showToast('Có lỗi xảy ra khi lưu chủ đề', 'error');
         } finally {
             setIsSubmitting(false);
         }
@@ -122,11 +136,11 @@ export default function TopicsListClient() {
             }
         } catch (error) {
             console.error('Failed to delete theme:', error);
-            alert('Có lỗi xảy ra khi xóa chủ đề.');
+            showToast('Có lỗi xảy ra khi xóa chủ đề', 'error');
         }
     };
 
-    const columns: Column<TopicSummary>[] = [
+    const columns = React.useMemo<Column<TopicSummary>[]>(() => [
         {
             header: 'Tên Chủ đề',
             className: 'w-[25%] font-semibold text-gray-900',
@@ -182,31 +196,28 @@ export default function TopicsListClient() {
                 </div>
             )
         }
-    ];
-
+    ], [totalItems]);
 
     return (
         <div className="bg-gray-50 min-h-screen font-sans w-full flex flex-col">
             <div className="p-8 pb-32 max-w-7xl mx-auto w-full flex-1">
-            {/* Header section with PageHeader */}
-            <div className="mb-4">
-                <PageHeader 
-                    breadcrumb={[{ label: 'Quản lý Chủ đề Giao tiếp', active: true }]}
-                    title="Danh sách Chủ đề"
-                    titleAlign="right"
-                    action={
-                        <button 
-                            onClick={handleOpenAddModal}
-                            className="bg-[#1A8DFF] hover:bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2 shadow-sm transition-all shadow-blue-500/20"
-                        >
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                            Thêm chủ đề mới
-                        </button>
-                    }
-                />
-            </div>
+                <div className="mb-4">
+                    <PageHeader 
+                        breadcrumb={[{ label: 'Quản lý Chủ đề Giao tiếp', active: true }]}
+                        title="Danh sách Chủ đề"
+                        titleAlign="right"
+                        action={
+                            <button 
+                                onClick={handleOpenAddModal}
+                                className="bg-[#1A8DFF] hover:bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2 shadow-sm transition-all shadow-blue-500/20"
+                            >
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                                Thêm chủ đề mới
+                            </button>
+                        }
+                    />
+                </div>
 
-                {/* Thanh công cụ (Toolbar) */}
                 <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex flex-col md:flex-row gap-4 mb-6">
                     <div className="relative flex-1">
                         <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -240,7 +251,7 @@ export default function TopicsListClient() {
                         <CommonTable
                             data={topics}
                             columns={columns}
-                            keyExtractor={(topic) => topic.id}
+                            keyExtractor={(topic, index) => topic.id || index}
                         />
 
                         <Pagination
@@ -248,18 +259,15 @@ export default function TopicsListClient() {
                             totalPages={totalPages}
                             onPageChange={setCurrentPage}
                             totalItems={totalItems}
-                            itemsPerPage={itemsPerPage}
+                            itemsPerPage={ITEMS_PER_PAGE}
                         />
                     </>
                 )}
             </div>
 
-            {/* Modal Thêm Chủ đề mới */}
             {isAddModalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
                     <div className="bg-white rounded-xl shadow-xl w-full max-w-[500px] overflow-hidden flex flex-col">
-
-                        {/* Header */}
                         <div className="flex items-center justify-between p-6 pb-4">
                             <h2 className="text-lg font-bold text-slate-900">
                                 {editingTheme ? 'Cập nhật Chủ đề' : 'Thêm Chủ đề Giao tiếp'}
@@ -275,43 +283,44 @@ export default function TopicsListClient() {
                             </button>
                         </div>
 
-                        {/* Body */}
                         <div className="px-6 space-y-6">
                             <div className="space-y-2.5">
-                                <label className="block text-sm font-medium text-slate-700">Tên chủ đề (Tiếng Việt)</label>
+                                <label className="block text-sm font-medium text-slate-700">Tên chủ đề (Tiếng Việt) *</label>
                                 <input
                                     type="text"
                                     value={themeTitle}
-                                    onChange={(e) => setThemeTitle(e.target.value)}
+                                    onChange={(e) => {
+                                        setThemeTitle(e.target.value);
+                                        if (errors.title) setErrors(prev => ({ ...prev, title: '' }));
+                                    }}
                                     placeholder="Ví dụ: Du lịch & Khách sạn"
-                                    className="w-full px-4 py-2.5 text-sm bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1A8DFF]/20 focus:border-[#1A8DFF] transition-all placeholder:text-slate-400"
+                                    className={`w-full px-4 py-2.5 text-sm bg-white border ${errors.title ? 'border-red-500 focus:ring-red-200 focus:border-red-500' : 'border-slate-200 focus:ring-[#1A8DFF]/20 focus:border-[#1A8DFF]'} rounded-lg focus:outline-none focus:ring-2 transition-all placeholder:text-slate-400`}
                                 />
-                            </div>
-
-                            <div className="space-y-2.5">
-                                <label className="block text-sm font-medium text-slate-700">Tên chủ đề (Tiếng Nhật)</label>
-                                <input
-                                    type="text"
-                                    value={themeTitleJapanese}
-                                    onChange={(e) => setThemeTitleJapanese(e.target.value)}
-                                    placeholder="Ví dụ: 観光とホテル"
-                                    className="w-full px-4 py-2.5 text-sm bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1A8DFF]/20 focus:border-[#1A8DFF] transition-all placeholder:text-slate-400"
-                                />
+                                {errors.title && <p className="text-xs text-red-500 mt-1">{errors.title}</p>}
+                                <p className={`text-right text-[10px] ${themeTitle.length > 255 ? 'text-red-500' : 'text-slate-400'}`}>
+                                    {themeTitle.length}/255
+                                </p>
                             </div>
 
                             <div className="space-y-2.5">
                                 <label className="block text-sm font-medium text-slate-700">Mô tả ngắn (Tùy chọn)</label>
                                 <textarea
                                     value={themeDescription}
-                                    onChange={(e) => setThemeDescription(e.target.value)}
+                                    onChange={(e) => {
+                                        setThemeDescription(e.target.value);
+                                        if (errors.description) setErrors(prev => ({ ...prev, description: '' }));
+                                    }}
                                     placeholder="Nhập mô tả ngắn về chủ đề này..."
                                     rows={3}
-                                    className="w-full px-4 py-2.5 text-sm bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1A8DFF]/20 focus:border-[#1A8DFF] transition-all resize-none placeholder:text-slate-400"
+                                    className={`w-full px-4 py-2.5 text-sm bg-white border ${errors.description ? 'border-red-500 focus:ring-red-200 focus:border-red-500' : 'border-slate-200 focus:ring-[#1A8DFF]/20 focus:border-[#1A8DFF]'} rounded-lg focus:outline-none focus:ring-2 transition-all resize-none placeholder:text-slate-400`}
                                 ></textarea>
+                                {errors.description && <p className="text-xs text-red-500 mt-1">{errors.description}</p>}
+                                <p className={`text-right text-[10px] ${themeDescription.length > 1000 ? 'text-red-500' : 'text-slate-400'}`}>
+                                    {themeDescription.length}/1000
+                                </p>
                             </div>
                         </div>
 
-                        {/* Footer */}
                         <div className="flex items-center justify-end gap-3 p-6 pt-8">
                             <button
                                 onClick={() => {
@@ -325,7 +334,7 @@ export default function TopicsListClient() {
                             </button>
                             <button 
                                 onClick={handleSubmitTheme}
-                                disabled={isSubmitting || !themeTitle.trim()}
+                                disabled={isSubmitting}
                                 className="px-5 py-2 text-sm font-medium text-white bg-[#1A8DFF] rounded-lg hover:bg-blue-600 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                             >
                                 {isSubmitting ? (
@@ -339,7 +348,7 @@ export default function TopicsListClient() {
                     </div>
                 </div>
             )}
-            {/* Toast Notification */}
+            
             <Toast 
                 message={toast.message}
                 type={toast.type}

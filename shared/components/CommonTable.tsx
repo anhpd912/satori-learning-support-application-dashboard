@@ -10,7 +10,7 @@ export interface Column<T> {
 interface CommonTableProps<T> {
   data: T[];
   columns: Column<T>[];
-  keyExtractor: (item: T) => string | number;
+  keyExtractor: (item: T, index: number) => string | number;
   isLoading?: boolean;
   onRowClick?: (item: T) => void;
   className?: string;
@@ -46,8 +46,8 @@ export default function CommonTable<T,>({
           </tr>
         </thead>
         <tbody className="divide-y divide-gray-100">
-          {data.map((item) => (
-            <tr key={keyExtractor(item)} 
+          {data.map((item, index) => (
+            <tr key={keyExtractor(item, index)} 
                 onClick={() => onRowClick && onRowClick(item)}
                 className={`hover:bg-gray-50 transition ${onRowClick ? 'cursor-pointer' : ''}`}>
               {columns.map((col, index) => (
