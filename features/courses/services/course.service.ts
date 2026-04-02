@@ -56,6 +56,20 @@ export interface UpdateCoursePayload {
 
 class CourseService {
     private readonly API_URL = process.env.NEXT_PUBLIC_API_URL + '/manager/courses'; 
+    private readonly PUBLIC_API_URL = process.env.NEXT_PUBLIC_API_URL + '/courses';
+
+    async getPublicCourses(): Promise<Course[]> {
+        try {
+            const response = await api.get<ApiResponse<Course[]>>(this.PUBLIC_API_URL);
+            if (!response.data.success) {
+                throw new Error(response.data.message || 'Không thể tải danh sách khóa học');
+            }
+            return response.data.data;
+        } catch (error: any) {
+            console.error("Lỗi khi fetch public courses:", error);
+            throw new Error(error.response?.data?.message || error.message || 'Lỗi kết nối Server');
+        }
+    }
 
     async getCourses(
         page: number = 1,

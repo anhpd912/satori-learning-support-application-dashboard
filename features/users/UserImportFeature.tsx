@@ -510,7 +510,7 @@ export default function UserImportFeature({ role = 'ADMIN' }: UserImportFeatureP
                                 <CommonTable
                                     data={paginatedItems}
                                     columns={columns}
-                                    keyExtractor={(item: any) => item.email}
+                                    keyExtractor={(item: any, index: number) => `${item._type}-${item.email || index}-${index}`}
                                     className="import-preview-table"
                                 />
                             </div>

@@ -31,7 +31,6 @@ export default function CreateClassPage() {
         courseId: '',
         maxStudents: '',
         startDate: '',
-        endDate: '',
         description: '',
     });
 
@@ -41,13 +40,13 @@ export default function CreateClassPage() {
     useEffect(() => {
         const fetchOptions = async () => {
             try {
-                const [teachersRes, coursesRes] = await Promise.all([
+                const [teachersRes, coursesData] = await Promise.all([
                     userService.getUsers(1, 100, '', 'TEACHER', 'ACTIVE'),
-                    courseService.getCourses(1, 100, '', 'ALL', 'ACTIVE')
+                    courseService.getPublicCourses()
                 ]);
 
                 setTeacherOptions(teachersRes.data.map(t => ({ label: t.name, value: t.id })));
-                setCourseOptions(coursesRes.data.map(c => ({ label: c.name, value: c.id })));
+                setCourseOptions(coursesData.map(c => ({ label: c.name, value: c.id })));
             } catch (error) {
                 setToast({ message: 'Lỗi tải danh sách giảng viên/khóa học', type: 'error', isVisible: true });
             }
@@ -66,7 +65,16 @@ export default function CreateClassPage() {
         const newErrors: Record<string, string> = {};
         let isValid = true;
 
-        if (!formData.name.trim()) { newErrors.name = 'Vui lòng nhập tên lớp học'; isValid = false; }
+        if (!formData.name.trim()) {
+            newErrors.name = 'Vui lòng nhập tên lớp học';
+            isValid = false;
+        } else if (formData.name.trim().length < 3) {
+            newErrors.name = 'Tên lớp học phải có ít nhất 3 ký tự';
+            isValid = false;
+        } else if (formData.name.trim().length > 255) {
+            newErrors.name = 'Tên lớp học không được vượt quá 255 ký tự';
+            isValid = false;
+        }
         if (!formData.teacherId) { newErrors.teacherId = 'Vui lòng chọn giảng viên'; isValid = false; }
         if (!formData.courseId) { newErrors.courseId = 'Vui lòng chọn khóa học'; isValid = false; }
 
@@ -85,16 +93,6 @@ export default function CreateClassPage() {
         }
 
         if (!formData.startDate) { newErrors.startDate = 'Vui lòng chọn ngày bắt đầu'; isValid = false; }
-        if (!formData.endDate) { newErrors.endDate = 'Vui lòng chọn ngày kết thúc'; isValid = false; }
-
-        if (formData.startDate && formData.endDate) {
-            const start = new Date(formData.startDate);
-            const end = new Date(formData.endDate);
-            if (start > end) {
-                newErrors.endDate = 'Ngày kết thúc phải sau ngày bắt đầu';
-                isValid = false;
-            }
-        }
 
         setErrors(newErrors);
         return isValid;
@@ -115,7 +113,6 @@ export default function CreateClassPage() {
                 courseId: formData.courseId,
                 maxStudents: parseInt(formData.maxStudents),
                 startDate: formData.startDate,
-                endDate: formData.endDate,
                 description: formData.description
             };
 
@@ -149,6 +146,7 @@ export default function CreateClassPage() {
                 backUrl="/classes"
                 backLabel="Quay lại"
                 title="Tạo lớp học mới"
+                titleAlign="right"
                 description="Thiết lập thông tin cơ bản cho lớp học mới."
             />
 
@@ -199,8 +197,8 @@ export default function CreateClassPage() {
                         />
                     </div>
 
-                    {/* Hàng 3: Sĩ số, Ngày bắt đầu, Ngày kết thúc (3 cột) */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    {/* Hàng 3: Sĩ số, Ngày bắt đầu (2 cột) */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <FormInput
                             label="Sĩ số tối đa"
                             type="number"
@@ -217,14 +215,6 @@ export default function CreateClassPage() {
                             onChange={(e) => handleChange('startDate', e.target.value)}
                             required
                             error={errors.startDate}
-                        />
-
-                        <FormDate
-                            label="Ngày kết thúc"
-                            value={formData.endDate}
-                            onChange={(e) => handleChange('endDate', e.target.value)}
-                            required
-                            error={errors.endDate}
                         />
                     </div>
 
